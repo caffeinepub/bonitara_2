@@ -1,0 +1,158 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "Premium luxury eCommerce website for BONITARA – Inspired By Elegance. Features: Home page with hero, featured categories, best sellers, about section, reviews, newsletter; 4 main categories (Soap Making, Candle Making, Resin Art, Fragrance) each with 25+ products with full product details, pricing, SKU, stock, wishlist, related products; Wholesale page with inquiry form; FAQ, Shipping Policy, Terms & Conditions, Return & Refund Policy, Contact Us pages; cart, checkout, user accounts, order tracking, inventory management, admin dashboard, blog section; Razorpay/Stripe/UPI integration; luxury UI with ivory/beige/soft gold/charcoal palette, animations, hover effects, elegant typography; SEO optimized; email-enabled features (newsletter, contact form, wholesale inquiry form, order emails).",
+  "architectural_notes": [
+    "Brand name: BONITARA – Inspired By Elegance",
+    "Color palette: ivory, beige, soft gold, charcoal",
+    "India-based business; GST/PAN required for wholesale; pricing in INR (₹)",
+    "Payment: Razorpay / Stripe / UPI integration",
+    "User accounts via Internet Identity",
+    "Email must be enabled on account for newsletter, contact form, wholesale inquiry, and order emails"
+  ],
+  "known_issues": [
+    "Previous build ran for 3+ days without completing — canceled and restarting"
+  ],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Luxury eCommerce hero banner with soft bokeh floral background in ivory and gold tones, elegant and minimal (hero-banner.dim_1920x900.png)\n- BONITARA brand wordmark logo in gold lettering on transparent background, serif font, refined and minimal (bonitara-logo.dim_400x120.png)\n- Soap Making category card background — artisan soap bars arranged elegantly on marble surface in warm tones (category-soap.dim_600x400.png)\n- Candle Making category card background — lit candles with soft glow on beige linen surface (category-candle.dim_600x400.png)\n- Resin Art category card background — colorful resin art pieces with gold accents on neutral background (category-resin.dim_600x400.png)\n- Fragrance category card background — perfume bottles and dried botanicals on ivory background (category-fragrance.dim_600x400.png)",
+  "existing_features": [
+    {
+      "id": "feature-build-a-home-page-with-a-full-width-hero-section-featured-categories-section-soap-making-candle-making-resin-art-fragrance-best-sellers-product-grid-about-brand-story-section-customer-reviews-carousel-and-newsletter-signup-section",
+      "title": "Build a Home page with a full-width hero section, featured categories section (Soap Making, Candle Making, Resin Art, Fragrance), best sellers product grid, about/brand story section, customer reviews carousel, and newsletter signup section.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-4-product-category-pages-soap-making-candle-making-resin-art-and-fragrance-each-displaying-25-products-with-filtering-and-sorting-options",
+      "title": "Create 4 product category pages — Soap Making, Candle Making, Resin Art, and Fragrance — each displaying 25+ products with filtering and sorting options.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-individual-product-detail-pages-showing-full-product-info-name-description-price-sku-stock-status-image-gallery-related-products-and-add-to-cart-wishlist-controls",
+      "title": "Build individual product detail pages showing full product info: name, description, price, SKU, stock status, image gallery, related products, and Add to Cart / Wishlist controls.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-shopping-cart-with-item-management-add-remove-update-quantity-subtotal-calculation-and-proceed-to-checkout-flow",
+      "title": "Implement a shopping cart with item management (add, remove, update quantity), subtotal calculation, and proceed to checkout flow.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-checkout-page-with-shipping-address-form-order-summary-and-payment-method-selection-supporting-razorpay-stripe-and-upi-placeholder-options",
+      "title": "Build a checkout page with shipping address form, order summary, and payment method selection supporting Razorpay, Stripe, and UPI placeholder options.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-user-account-system-with-registration-login-profile-management-order-history-and-order-tracking",
+      "title": "Implement user account system with registration, login, profile management, order history, and order tracking.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-wholesale-page-with-bulk-pricing-tiers-moq-minimum-order-quantity-information-private-label-details-gst-information-and-an-email-enabled-inquiry-form",
+      "title": "Build a Wholesale page with bulk pricing tiers, MOQ (minimum order quantity) information, private label details, GST information, and an email-enabled inquiry form.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-static-informational-pages-faq-shipping-policy-terms-conditions-return-refund-policy-and-contact-us-with-a-functional-contact-form",
+      "title": "Create static informational pages: FAQ, Shipping Policy, Terms & Conditions, Return & Refund Policy, and Contact Us with a functional contact form.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-an-admin-dashboard-allowing-management-of-products-add-edit-delete-inventory-levels-order-management-with-status-updates-and-viewing-wholesale-and-contact-inquiries",
+      "title": "Build an Admin Dashboard allowing management of products (add/edit/delete), inventory levels, order management with status updates, and viewing wholesale and contact inquiries.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-blog-section-with-a-listing-page-and-individual-blog-post-detail-pages",
+      "title": "Build a Blog section with a listing page and individual blog post detail pages.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-luxury-visual-theme-across-all-pages-using-an-ivory-beige-soft-gold-charcoal-color-palette-elegant-serif-typography-for-headings-smooth-animations-hover-effects-on-interactive-elements-and-fully-mobile-responsive-layouts",
+      "title": "Apply a luxury visual theme across all pages using an ivory/beige/soft gold/charcoal color palette, elegant serif typography for headings, smooth animations, hover effects on interactive elements, and fully mobile-responsive layouts.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-and-render-a-luxury-brand-hero-background-image-and-a-bonitara-logo-as-static-assets-used-throughout-the-site",
+      "title": "Generate and render a luxury brand hero background image and a BONITARA logo as static assets used throughout the site.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Full luxury eCommerce site for BONITARA brand with 4 categories (Soap Making, Candle Making, Resin Art, Fragrance), 100+ products, cart, checkout, wishlist, user accounts, order tracking, admin dashboard",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Wholesale page with bulk pricing, MOQ, private label, GST info, and email-enabled inquiry form",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "FAQ, Shipping Policy, Terms & Conditions, Return & Refund Policy, and Contact Us pages",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Payment integration: Razorpay, Stripe, UPI placeholder",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Luxury UI: ivory/beige/soft gold/charcoal palette, smooth animations, hover effects, elegant typography, SEO optimized, mobile responsive",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Email-enabled features: newsletter signup, contact form, wholesale inquiry form, order confirmation emails",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "BONITARA",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

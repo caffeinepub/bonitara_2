@@ -1,0 +1,481 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "BONITARA Luxury eCommerce Platform – Frontend Implementation",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Build Home page with hero section, featured categories, best sellers, brand story, reviews carousel, and newsletter signup",
+      "acceptanceCriteria": [
+        "Hero section displays brand name BONITARA and tagline 'Inspired By Elegance'",
+        "Four featured category cards link to their respective category pages",
+        "Best sellers grid shows at least 8 products with image, name, and price",
+        "Newsletter signup form captures email and shows success confirmation"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "create",
+          "description": "Create Home page with hero section using frontend/public/assets/generated/hero-banner.dim_1920x900.png, featured categories section with cards linking to category pages (using frontend/public/assets/generated/category-soap.dim_600x400.png, frontend/public/assets/generated/category-candle.dim_600x400.png, frontend/public/assets/generated/category-resin.dim_600x400.png, frontend/public/assets/generated/category-fragrance.dim_600x400.png), best sellers product grid fetching from backend, brand story section, customer reviews carousel, and newsletter signup form that stores submissions via backend"
+        },
+        {
+          "path": "frontend/src/components/HeroSection.tsx",
+          "operation": "create",
+          "description": "Create full-width hero section component displaying BONITARA brand name, tagline 'Inspired By Elegance', and frontend/public/assets/generated/hero-banner.dim_1920x900.png as background image"
+        },
+        {
+          "path": "frontend/src/components/FeaturedCategories.tsx",
+          "operation": "create",
+          "description": "Create featured categories section with four category cards (Soap Making, Candle Making, Resin Art, Fragrance) using generated category images from frontend/public/assets/generated, each linking to respective category page"
+        },
+        {
+          "path": "frontend/src/components/BestSellersGrid.tsx",
+          "operation": "create",
+          "description": "Create best sellers product grid component fetching products from backend and displaying at least 8 items with image, name, price, Add to Cart, and Wishlist buttons"
+        },
+        {
+          "path": "frontend/src/components/BrandStory.tsx",
+          "operation": "create",
+          "description": "Create brand story/about section component with BONITARA brand narrative and visual elements"
+        },
+        {
+          "path": "frontend/src/components/ReviewsCarousel.tsx",
+          "operation": "create",
+          "description": "Create customer reviews carousel component displaying testimonials with smooth transitions"
+        },
+        {
+          "path": "frontend/src/components/NewsletterSignup.tsx",
+          "operation": "create",
+          "description": "Create newsletter signup form component capturing email and showing success confirmation after backend submission"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add route for HomePage at root path /"
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Create 4 product category pages with filtering and sorting for 25+ products each",
+      "acceptanceCriteria": [
+        "Each category page lists at least 25 products",
+        "Products can be filtered by price range and sorted by price/popularity/newest",
+        "Product cards show image, name, price, and Add to Cart / Wishlist buttons"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/CategoryPage.tsx",
+          "operation": "create",
+          "description": "Create dynamic category page component displaying products from backend for the selected category (Soap Making, Candle Making, Resin Art, or Fragrance) with filtering by price range, sorting options (price/popularity/newest), and product cards with image, name, price, Add to Cart, and Wishlist buttons"
+        },
+        {
+          "path": "frontend/src/components/ProductCard.tsx",
+          "operation": "create",
+          "description": "Create reusable product card component displaying product image, name, price, Add to Cart button, and Wishlist button with hover effects"
+        },
+        {
+          "path": "frontend/src/components/ProductFilters.tsx",
+          "operation": "create",
+          "description": "Create product filters component with price range slider and sort dropdown (price ascending/descending, popularity, newest)"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add routes for category pages at /category/soap-making, /category/candle-making, /category/resin-art, and /category/fragrance"
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Build product detail pages with full info, image gallery, related products, and cart/wishlist controls",
+      "acceptanceCriteria": [
+        "Product detail page displays image gallery, description, SKU, price, and stock status",
+        "Related products section shows at least 4 items from the same category",
+        "Add to Cart and Add to Wishlist buttons are functional"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ProductDetailPage.tsx",
+          "operation": "create",
+          "description": "Create product detail page fetching full product data from backend including name, description, price, SKU, stock status, image gallery, Add to Cart and Add to Wishlist controls, and related products section showing at least 4 items from same category"
+        },
+        {
+          "path": "frontend/src/components/ProductImageGallery.tsx",
+          "operation": "create",
+          "description": "Create image gallery component with thumbnail navigation and main image display"
+        },
+        {
+          "path": "frontend/src/components/RelatedProducts.tsx",
+          "operation": "create",
+          "description": "Create related products section component fetching and displaying at least 4 products from the same category"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add route for product detail page at /product/:productId"
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Implement shopping cart with item management and checkout flow",
+      "acceptanceCriteria": [
+        "Cart persists items across page navigation",
+        "Quantities can be increased, decreased, or removed",
+        "Subtotal updates in real time",
+        "Checkout button navigates to checkout page"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useCart.ts",
+          "operation": "create",
+          "description": "Create cart management hook with functions to add items, remove items, update quantities, calculate subtotal, and persist cart data via backend or local storage across navigation"
+        },
+        {
+          "path": "frontend/src/pages/CartPage.tsx",
+          "operation": "create",
+          "description": "Create shopping cart page displaying cart items with quantity controls (increase, decrease, remove), real-time subtotal calculation, and checkout button navigating to /checkout"
+        },
+        {
+          "path": "frontend/src/components/CartItem.tsx",
+          "operation": "create",
+          "description": "Create cart item component displaying product image, name, price, quantity controls, and remove button"
+        },
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Add cart icon to header with item count badge linking to /cart"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add route for cart page at /cart"
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Build checkout page with shipping form, order summary, and payment method selection",
+      "acceptanceCriteria": [
+        "Checkout form collects name, address, city, state, pincode, phone, and email",
+        "Order summary shows items, quantities, subtotal, shipping, and total",
+        "Payment method selector displays Razorpay, Stripe, and UPI as options",
+        "UPI option shows a placeholder message indicating coming soon"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "operation": "create",
+          "description": "Create checkout page with shipping address form (name, address, city, state, pincode, phone, email), order summary displaying items, quantities, subtotal, shipping, and total, and payment method selector with Razorpay, Stripe, and UPI (placeholder with coming soon message) options"
+        },
+        {
+          "path": "frontend/src/components/ShippingForm.tsx",
+          "operation": "create",
+          "description": "Create shipping address form component collecting name, address, city, state, pincode, phone, and email with validation"
+        },
+        {
+          "path": "frontend/src/components/OrderSummary.tsx",
+          "operation": "create",
+          "description": "Create order summary component displaying line items with quantities, subtotal, shipping cost, and total amount"
+        },
+        {
+          "path": "frontend/src/components/PaymentSelector.tsx",
+          "operation": "create",
+          "description": "Create payment method selector component with options for Razorpay (placeholder), Stripe (placeholder), and UPI (with coming soon message)"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add route for checkout page at /checkout"
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Implement user account system with registration, login, profile, order history, and tracking",
+      "acceptanceCriteria": [
+        "Users can register and log in",
+        "Profile page shows saved address and account details",
+        "Order history lists past orders with status",
+        "Order tracking page allows users to view current order status"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/LoginButton.tsx",
+          "operation": "create",
+          "description": "Create login/logout button component using the authorization component's useInternetIdentity hook for authentication flow"
+        },
+        {
+          "path": "frontend/src/components/ProfileSetupModal.tsx",
+          "operation": "create",
+          "description": "Create profile setup modal component that prompts new users to enter their name on first login, using the authorization component's saveCallerUserProfile capability. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useUserProfile.ts",
+          "operation": "create",
+          "description": "Create user profile hook wrapping authorization component's getCallerUserProfile and saveCallerUserProfile backend capabilities to fetch and update user profile data"
+        },
+        {
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "create",
+          "description": "Create profile page displaying user's saved address, account details, and name using the authorization component. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/OrderHistoryPage.tsx",
+          "operation": "create",
+          "description": "Create order history page fetching and listing past orders from backend with order number, date, items, total, and status for authenticated users"
+        },
+        {
+          "path": "frontend/src/pages/OrderTrackingPage.tsx",
+          "operation": "create",
+          "description": "Create order tracking page allowing users to view current order status by order ID, fetching data from backend"
+        },
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Add LoginButton component and profile/account dropdown menu in header with links to /profile and /orders"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add routes for profile page at /profile, order history at /orders, and order tracking at /orders/:orderId. Wrap authenticated routes with authorization check requiring user role using the authorization component. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Build Wholesale page with bulk pricing tiers, MOQ, private label info, GST details, and inquiry form",
+      "acceptanceCriteria": [
+        "Page displays tiered pricing table based on order quantity",
+        "MOQ, private label program, and GST details are clearly listed",
+        "Inquiry form collects business name, contact, email, product interest, and quantity",
+        "Form submission stores the inquiry in the backend"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/WholesalePage.tsx",
+          "operation": "create",
+          "description": "Create wholesale page displaying bulk pricing tier table, MOQ information, private label program details, GST information, and inquiry form that collects business name, contact, email, product interest, and quantity, submitting to backend for storage"
+        },
+        {
+          "path": "frontend/src/components/BulkPricingTable.tsx",
+          "operation": "create",
+          "description": "Create bulk pricing table component displaying tiered pricing based on order quantity ranges"
+        },
+        {
+          "path": "frontend/src/components/WholesaleInquiryForm.tsx",
+          "operation": "create",
+          "description": "Create wholesale inquiry form component collecting business name, contact, email, product interest, and quantity, with validation and success confirmation after backend submission"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add route for wholesale page at /wholesale"
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Create static informational pages: FAQ, Shipping Policy, Terms, Return Policy, and Contact Us",
+      "acceptanceCriteria": [
+        "Each page renders with appropriate content sections",
+        "FAQ uses an accordion/expandable format",
+        "Contact Us form collects name, email, subject, and message and stores submissions in the backend"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/FAQPage.tsx",
+          "operation": "create",
+          "description": "Create FAQ page with accordion/expandable format for questions and answers"
+        },
+        {
+          "path": "frontend/src/pages/ShippingPolicyPage.tsx",
+          "operation": "create",
+          "description": "Create shipping policy page displaying shipping terms, delivery timelines, and cost information"
+        },
+        {
+          "path": "frontend/src/pages/TermsPage.tsx",
+          "operation": "create",
+          "description": "Create terms and conditions page displaying legal terms and usage policies"
+        },
+        {
+          "path": "frontend/src/pages/ReturnPolicyPage.tsx",
+          "operation": "create",
+          "description": "Create return and refund policy page displaying return eligibility, process, and refund terms"
+        },
+        {
+          "path": "frontend/src/pages/ContactPage.tsx",
+          "operation": "create",
+          "description": "Create contact page with form collecting name, email, subject, and message, submitting to backend for storage and showing success confirmation"
+        },
+        {
+          "path": "frontend/src/components/AccordionItem.tsx",
+          "operation": "create",
+          "description": "Create reusable accordion item component for FAQ page with expand/collapse functionality"
+        },
+        {
+          "path": "frontend/src/components/Footer.tsx",
+          "operation": "create",
+          "description": "Create footer component with links to FAQ, Shipping Policy, Terms, Return Policy, Contact, and Wholesale pages, plus BONITARA logo from frontend/public/assets/generated/bonitara-logo.dim_400x120.png"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add routes for FAQ at /faq, Shipping Policy at /shipping, Terms at /terms, Return Policy at /returns, and Contact at /contact"
+        }
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "summary": "Build Admin Dashboard for product management, inventory, orders, and inquiries",
+      "acceptanceCriteria": [
+        "Admin can add, edit, and delete products across all categories",
+        "Inventory levels can be updated per product",
+        "Orders can be viewed and their status updated (Processing, Shipped, Delivered)",
+        "Wholesale and contact form inquiries are listed and viewable"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminDashboardPage.tsx",
+          "operation": "create",
+          "description": "Create admin dashboard page with navigation to product management, inventory, orders, and inquiries sections, protected by admin role check using the authorization component. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AdminProductsPage.tsx",
+          "operation": "create",
+          "description": "Create admin products management page listing all products with add, edit, and delete actions, calling backend product management capabilities, restricted to admin role using the authorization component. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AdminInventoryPage.tsx",
+          "operation": "create",
+          "description": "Create admin inventory page allowing updates to product stock levels by fetching and updating inventory via backend, restricted to admin role using the authorization component. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AdminOrdersPage.tsx",
+          "operation": "create",
+          "description": "Create admin orders page listing all orders with ability to update status (Processing, Shipped, Delivered), restricted to admin role using the authorization component. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AdminInquiriesPage.tsx",
+          "operation": "create",
+          "description": "Create admin inquiries page displaying wholesale and contact form submissions from backend, restricted to admin role using the authorization component. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/ProductForm.tsx",
+          "operation": "create",
+          "description": "Create product form component for adding and editing products with fields for name, description, price, SKU, category, stock, and image upload"
+        },
+        {
+          "path": "frontend/src/components/AdminNav.tsx",
+          "operation": "create",
+          "description": "Create admin navigation sidebar component with links to Products, Inventory, Orders, and Inquiries admin pages"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add routes for admin dashboard at /admin, admin products at /admin/products, admin inventory at /admin/inventory, admin orders at /admin/orders, and admin inquiries at /admin/inquiries. Wrap all admin routes with authorization guard requiring admin role using the authorization component. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "summary": "Build Blog section with listing page and individual post detail pages",
+      "acceptanceCriteria": [
+        "Blog listing page shows post title, excerpt, date, and thumbnail",
+        "Individual post page renders full content",
+        "Admin can create and manage blog posts"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/BlogListingPage.tsx",
+          "operation": "create",
+          "description": "Create blog listing page fetching and displaying all blog posts from backend with title, excerpt, date, and thumbnail image"
+        },
+        {
+          "path": "frontend/src/pages/BlogPostPage.tsx",
+          "operation": "create",
+          "description": "Create blog post detail page fetching and rendering full post content from backend by post ID"
+        },
+        {
+          "path": "frontend/src/pages/AdminBlogPage.tsx",
+          "operation": "create",
+          "description": "Create admin blog management page allowing admins to create, edit, and delete blog posts via backend, restricted to admin role using the authorization component. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/BlogPostCard.tsx",
+          "operation": "create",
+          "description": "Create blog post card component displaying post title, excerpt, date, and thumbnail with link to full post"
+        },
+        {
+          "path": "frontend/src/components/BlogPostForm.tsx",
+          "operation": "create",
+          "description": "Create blog post form component for creating and editing posts with fields for title, content, excerpt, and thumbnail upload"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add routes for blog listing at /blog, blog post detail at /blog/:postId, and admin blog management at /admin/blog (protected by admin role)"
+        }
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "summary": "Apply luxury visual theme with color palette, typography, animations, and responsive layouts",
+      "acceptanceCriteria": [
+        "Color palette consistently uses ivory (#FFFFF0), beige (#F5F0E8), soft gold (#C9A84C), and charcoal (#2C2C2C)",
+        "Headings use an elegant serif font; body text uses a clean sans-serif",
+        "Product cards and buttons have smooth hover transitions",
+        "All pages are fully usable on mobile and tablet screen sizes"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add luxury theme CSS variables for color palette (ivory #FFFFF0, beige #F5F0E8, soft gold #C9A84C, charcoal #2C2C2C), elegant serif font for headings, sans-serif for body text, smooth hover transitions, and base responsive styles"
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Extend Tailwind theme with BONITARA luxury color palette (ivory, beige, softGold, charcoal), serif and sans-serif font families, smooth transition utilities, and responsive breakpoints"
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "create",
+          "description": "Create main layout component wrapping Header, Footer, and children with consistent luxury styling and mobile-responsive structure"
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wrap all routes with Layout component to ensure consistent luxury theme across all pages"
+        }
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "summary": "Generate and render luxury brand hero image and BONITARA logo as static assets",
+      "acceptanceCriteria": [
+        "Hero section displays the generated luxury background image",
+        "Logo appears in the navigation header and footer",
+        "Images are served from frontend/public/assets/generated"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "create",
+          "description": "Create header component displaying BONITARA logo from frontend/public/assets/generated/bonitara-logo.dim_400x120.png with navigation links to all main pages (Home, Categories, Wholesale, Blog, Contact, Cart, Profile) and LoginButton"
+        },
+        {
+          "path": "frontend/src/components/HeroSection.tsx",
+          "operation": "modify",
+          "description": "Ensure hero section component uses frontend/public/assets/generated/hero-banner.dim_1920x900.png as background image with proper responsive rendering"
+        },
+        {
+          "path": "frontend/src/components/Footer.tsx",
+          "operation": "modify",
+          "description": "Ensure footer component displays BONITARA logo from frontend/public/assets/generated/bonitara-logo.dim_400x120.png"
+        }
+      ]
+    }
+  ]
+}

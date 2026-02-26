@@ -1,0 +1,256 @@
+{
+  "kind": "build_request",
+  "title": "BONITARA Luxury eCommerce Platform – Full Rebuild",
+  "projectName": "BONITARA",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Build a Home page with a full-width hero section, featured categories section (Soap Making, Candle Making, Resin Art, Fragrance), best sellers product grid, about/brand story section, customer reviews carousel, and newsletter signup section.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "Full luxury eCommerce site for BONITARA brand"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Hero section displays brand name BONITARA and tagline 'Inspired By Elegance'",
+        "Four featured category cards link to their respective category pages",
+        "Best sellers grid shows at least 8 products with image, name, and price",
+        "Newsletter signup form captures email and shows success confirmation"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Create 4 product category pages — Soap Making, Candle Making, Resin Art, and Fragrance — each displaying 25+ products with filtering and sorting options.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "4 categories (Soap Making, Candle Making, Resin Art, Fragrance), 100+ products"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each category page lists at least 25 products",
+        "Products can be filtered by price range and sorted by price/popularity/newest",
+        "Product cards show image, name, price, and Add to Cart / Wishlist buttons"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Build individual product detail pages showing full product info: name, description, price, SKU, stock status, image gallery, related products, and Add to Cart / Wishlist controls.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "full product details, pricing, SKU, stock, wishlist, related products"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Product detail page displays image gallery, description, SKU, price, and stock status",
+        "Related products section shows at least 4 items from the same category",
+        "Add to Cart and Add to Wishlist buttons are functional"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement a shopping cart with item management (add, remove, update quantity), subtotal calculation, and proceed to checkout flow.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "cart, checkout"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Cart persists items across page navigation",
+        "Quantities can be increased, decreased, or removed",
+        "Subtotal updates in real time",
+        "Checkout button navigates to checkout page"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Build a checkout page with shipping address form, order summary, and payment method selection supporting Razorpay, Stripe, and UPI placeholder options.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "Payment integration: Razorpay, Stripe, UPI placeholder"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Checkout form collects name, address, city, state, pincode, phone, and email",
+        "Order summary shows items, quantities, subtotal, shipping, and total",
+        "Payment method selector displays Razorpay, Stripe, and UPI as options",
+        "UPI option shows a placeholder message indicating coming soon"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Implement user account system with registration, login, profile management, order history, and order tracking.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "user accounts, order tracking"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Users can register and log in",
+        "Profile page shows saved address and account details",
+        "Order history lists past orders with status",
+        "Order tracking page allows users to view current order status"
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Build a Wholesale page with bulk pricing tiers, MOQ (minimum order quantity) information, private label details, GST information, and an email-enabled inquiry form.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "Wholesale page with bulk pricing, MOQ, private label, GST info, and email-enabled inquiry form"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Page displays tiered pricing table based on order quantity",
+        "MOQ, private label program, and GST details are clearly listed",
+        "Inquiry form collects business name, contact, email, product interest, and quantity",
+        "Form submission stores the inquiry in the backend"
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Create static informational pages: FAQ, Shipping Policy, Terms & Conditions, Return & Refund Policy, and Contact Us with a functional contact form.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "FAQ, Shipping Policy, Terms & Conditions, Return & Refund Policy, and Contact Us pages"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each page renders with appropriate content sections",
+        "FAQ uses an accordion/expandable format",
+        "Contact Us form collects name, email, subject, and message and stores submissions in the backend"
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Build an Admin Dashboard allowing management of products (add/edit/delete), inventory levels, order management with status updates, and viewing wholesale and contact inquiries.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "admin dashboard"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin can add, edit, and delete products across all categories",
+        "Inventory levels can be updated per product",
+        "Orders can be viewed and their status updated (Processing, Shipped, Delivered)",
+        "Wholesale and contact form inquiries are listed and viewable"
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Build a Blog section with a listing page and individual blog post detail pages.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "blog section"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Blog listing page shows post title, excerpt, date, and thumbnail",
+        "Individual post page renders full content",
+        "Admin can create and manage blog posts"
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Apply a luxury visual theme across all pages using an ivory/beige/soft gold/charcoal color palette, elegant serif typography for headings, smooth animations, hover effects on interactive elements, and fully mobile-responsive layouts.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "Luxury UI: ivory/beige/soft gold/charcoal palette, smooth animations, hover effects, elegant typography, SEO optimized, mobile responsive"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Color palette consistently uses ivory (#FFFFF0), beige (#F5F0E8), soft gold (#C9A84C), and charcoal (#2C2C2C)",
+        "Headings use an elegant serif font; body text uses a clean sans-serif",
+        "Product cards and buttons have smooth hover transitions",
+        "All pages are fully usable on mobile and tablet screen sizes"
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Generate and render a luxury brand hero background image and a BONITARA logo as static assets used throughout the site.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "Luxury UI",
+          "BONITARA – Inspired By Elegance"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Hero section displays the generated luxury background image",
+        "Logo appears in the navigation header and footer",
+        "Images are served from frontend/public/assets/generated"
+      ]
+    }
+  ],
+  "constraints": [
+    "All backend logic must remain in a single Motoko actor in backend/main.mo",
+    "Do not use external payment SDKs for real transactions — Razorpay and Stripe integrations should be UI placeholder flows; UPI must be marked as coming soon",
+    "Do not edit any files under frontend/src/hooks/ or frontend/src/components/ui",
+    "Generated images must be served as static assets from frontend/public/assets/generated — do not route them through the backend"
+  ],
+  "nonGoals": [
+    "Real-time chat or live support",
+    "SMS or push notifications",
+    "Third-party authentication (no Google/Facebook login)",
+    "External database or cloud storage integration",
+    "Actual live payment processing (Razorpay/Stripe SDK live mode)"
+  ],
+  "imageRequirements": {
+    "required": [
+      "Luxury eCommerce hero banner with soft bokeh floral background in ivory and gold tones, elegant and minimal (hero-banner.dim_1920x900.png)",
+      "BONITARA brand wordmark logo in gold lettering on transparent background, serif font, refined and minimal (bonitara-logo.dim_400x120.png)",
+      "Soap Making category card background — artisan soap bars arranged elegantly on marble surface in warm tones (category-soap.dim_600x400.png)",
+      "Candle Making category card background — lit candles with soft glow on beige linen surface (category-candle.dim_600x400.png)",
+      "Resin Art category card background — colorful resin art pieces with gold accents on neutral background (category-resin.dim_600x400.png)",
+      "Fragrance category card background — perfume bottles and dried botanicals on ivory background (category-fragrance.dim_600x400.png)"
+    ],
+    "edits": []
+  }
+}

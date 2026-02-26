@@ -1,0 +1,20 @@
+{
+  "frontend/src/pages/HomePage.tsx": "Full home page with hero section, featured categories grid, best sellers, brand story, customer reviews carousel, and newsletter signup form.",
+  "frontend/src/pages/CategoryPage.tsx": "Dynamic category page displaying filtered and sorted products for a given category slug with price range filter and sort controls.",
+  "frontend/src/pages/ProductDetailPage.tsx": "Product detail page with image gallery, tabbed info, quantity selector, cart/wishlist controls, and related products — uses `shrink-0` instead of `flex-shrink-0`.",
+  "frontend/src/pages/CartPage.tsx": "Shopping cart page with item list, quantity controls, subtotal/shipping calculation, and checkout CTA — uses `shrink-0` instead of `flex-shrink-0`.",
+  "frontend/src/pages/CheckoutPage.tsx": "Checkout page with shipping form, payment method selector, order summary, and order confirmation — uses `shrink-0` instead of `flex-shrink-0`.",
+  "frontend/src/pages/WholesalePage.tsx": "Wholesale page with bulk pricing tiers, MOQ/GST info, feature highlights, and wholesale inquiry form with success state.",
+  "frontend/src/pages/FAQPage.tsx": "FAQ page using shadcn Accordion component with 10 common questions and a contact CTA at the bottom.",
+  "frontend/src/pages/ShippingPolicyPage.tsx": "Shipping policy page with info cards and detailed shipping sections — uses `shrink-0` instead of `flex-shrink-0`.",
+  "frontend/src/pages/TermsPage.tsx": "Terms and conditions page with 8 sections covering website use, pricing, IP, disclaimers, liability, and governing law.",
+  "frontend/src/pages/ReturnPolicyPage.tsx": "Return and refund policy page with info cards and detailed policy sections — uses `shrink-0` instead of `flex-shrink-0`.",
+  "frontend/src/pages/ContactPage.tsx": "Contact page with business info cards, social links, map placeholder, and contact form — uses `shrink-0` instead of `flex-shrink-0`.",
+  "frontend/src/pages/BlogListingPage.tsx": "Blog listing page displaying all blog posts as cards with title, excerpt, category, date, and image.",
+  "frontend/src/pages/BlogPostPage.tsx": "Blog post detail page rendering full post content with tags and related posts section.",
+  "frontend/src/pages/ProfilePage.tsx": "User profile page with account details, display name editor, and wishlist grid — fixes conflicting `font-mono` class replaced with `truncate`, and uses `shrink-0`.",
+  "frontend/src/pages/OrderHistoryPage.tsx": "Order history page listing mock past orders with status badges for authenticated users — uses `shrink-0` instead of `flex-shrink-0`.",
+  "frontend/src/pages/AdminDashboardPage.tsx": "Admin dashboard with overview stats, product table, order status management, and inquiry viewer — uses `shrink-0` instead of `flex-shrink-0`.",
+  "frontend/src/components/Footer.tsx": "Site footer with brand info, navigation links, policy links, contact details, social icons, and caffeine.ai attribution — uses `shrink-0` instead of `flex-shrink-0`.",
+  "frontend/src/components/Header.tsx": "Sticky header with logo, desktop nav with category dropdown, mobile menu, cart badge, wishlist link, and login/logout button — uses `shrink-0` instead of `flex-shrink-0`."
+}
