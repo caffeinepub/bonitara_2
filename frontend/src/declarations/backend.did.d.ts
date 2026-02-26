@@ -10,15 +10,58 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export type ProductId = bigint;
+export interface ProductReviews {
+  'reviews' : Array<Review>,
+  'averageRating' : [] | [Rating],
+  'reviewCount' : bigint,
+}
+export type Rating = bigint;
+export interface RegistrationInput {
+  'password' : string,
+  'name' : string,
+  'email' : string,
+}
+export interface Review {
+  'id' : bigint,
+  'title' : string,
+  'body' : string,
+  'author' : string,
+  'timestamp' : Time,
+  'rating' : Rating,
+}
+export interface ReviewInput {
+  'title' : string,
+  'body' : string,
+  'author' : string,
+  'rating' : Rating,
+}
+export type Time = bigint;
+export interface UserProfile { 'name' : string, 'email' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'adminCheck' : ActorMethod<[], undefined>,
+  'adminCheck' : ActorMethod<[string, string], boolean>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'assignUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'getAllProductAverageRatings' : ActorMethod<
+    [],
+    Array<[ProductId, [] | [Rating]]>
+  >,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getProductRatingSummary' : ActorMethod<[ProductId], [] | [ProductReviews]>,
+  'getProductReviewCount' : ActorMethod<[ProductId], bigint>,
+  'getReviews' : ActorMethod<[ProductId], ProductReviews>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getUserRole' : ActorMethod<[Principal], UserRole>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'loginUser' : ActorMethod<[string, string], boolean>,
+  'registerUser' : ActorMethod<[RegistrationInput], boolean>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'submitReview' : ActorMethod<[ProductId, ReviewInput], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

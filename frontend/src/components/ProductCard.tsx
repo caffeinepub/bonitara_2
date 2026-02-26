@@ -1,89 +1,123 @@
 import React from 'react';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
-import { Product } from '../data/products';
+import { ShoppingCart, Heart } from 'lucide-react';
 import { useCart, useWishlist } from '../App';
-import { toast } from 'sonner';
+import { StarRatingDisplay } from './StarRating';
+import { useAllProductRatings } from '../hooks/useProductReviews';
+import { Product } from '../data/products';
 
 interface ProductCardProps {
   product: Product;
 }
 
+// Map string product id to a stable numeric id for the backend review system
+function getNumericProductId(id: string): number {
+  const prefixMap: Record<string, number> = {
+    'sm': 0,
+    'cm': 1000,
+    'ra': 2000,
+    'fr': 3000,
+  };
+  const parts = id.split('-');
+  const prefix = parts[0];
+  const num = parseInt(parts[parts.length - 1]) || 0;
+  return (prefixMap[prefix] ?? 9000) + num;
+}
+
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toggleWishlist, isWishlisted } = useWishlist();
+  const { data: ratingsMap } = useAllProductRatings();
+
+  const numericId = getNumericProductId(product.id);
+  const dynamicRating = ratingsMap?.get(numericId) ?? 4.5;
   const wishlisted = isWishlisted(product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    addToCart(product);
-    toast.success(`${product.name} added to cart`);
+    e.stopPropagation();
+    addToCart(product, 1);
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     toggleWishlist(product.id);
-    toast.success(wishlisted ? 'Removed from wishlist' : 'Added to wishlist');
   };
 
   return (
-    <a href={`#/product/${product.id}`} className="group block">
-      <div className="bg-card border border-border rounded-sm overflow-hidden hover-lift luxury-shadow">
-        {/* Image */}
-        <div className="relative overflow-hidden aspect-[4/3] bg-beige">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+    <a
+      href={`#/product/${product.id}`}
+      onClick={() => window.scrollTo(0, 0)}
+      className="group block bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+    >
+      {/* Image Container */}
+      <div className="relative aspect-square overflow-hidden bg-muted">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1">
           {product.isBestSeller && (
-            <span className="absolute top-2 left-2 bg-gold text-white text-xs px-2 py-0.5 font-sans font-medium tracking-wide">
-              BESTSELLER
+            <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded-full">
+              Best Seller
             </span>
           )}
           {product.isNew && (
-            <span className="absolute top-2 left-2 bg-charcoal text-ivory text-xs px-2 py-0.5 font-sans font-medium tracking-wide">
-              NEW
+            <span className="bg-charcoal text-ivory text-xs font-semibold px-2 py-1 rounded-full">
+              New
             </span>
           )}
-          {product.stock === 0 && (
-            <div className="absolute inset-0 bg-charcoal/50 flex items-center justify-center">
-              <span className="text-ivory font-sans text-sm font-medium">Out of Stock</span>
-            </div>
-          )}
-          {/* Wishlist button */}
-          <button
-            onClick={handleWishlist}
-            className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white"
-          >
-            <Heart size={14} className={wishlisted ? 'fill-gold text-gold' : 'text-charcoal'} />
-          </button>
         </div>
 
-        {/* Info */}
-        <div className="p-4">
-          <p className="text-xs text-muted-foreground font-sans uppercase tracking-widest mb-1">
-            {product.category.replace('-', ' ')}
-          </p>
-          <h3 className="font-serif text-base text-charcoal leading-snug mb-1 line-clamp-2 group-hover:text-gold transition-colors">
-            {product.name}
-          </h3>
-          <p className="text-xs text-muted-foreground font-sans mb-3 line-clamp-2">
-            {product.shortDescription}
-          </p>
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="font-sans font-semibold text-charcoal text-base">₹{product.price}</span>
-              <span className="text-xs text-muted-foreground font-sans ml-1">/ unit</span>
-            </div>
-            <button
-              onClick={handleAddToCart}
-              disabled={product.stock === 0}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-charcoal text-ivory text-xs font-sans font-medium hover:bg-gold transition-colors duration-200 rounded-sm disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <ShoppingCart size={12} />
-              Add
-            </button>
-          </div>
+        {/* Wishlist button */}
+        <button
+          onClick={handleWishlist}
+          className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-all duration-200 ${
+            wishlisted
+              ? 'bg-red-500 text-white'
+              : 'bg-background/90 backdrop-blur-sm text-muted-foreground hover:text-red-500'
+          }`}
+          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+        >
+          <Heart size={15} className={wishlisted ? 'fill-current' : ''} />
+        </button>
+
+        {/* Add to cart overlay */}
+        <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          <button
+            onClick={handleAddToCart}
+            className="w-full bg-primary text-primary-foreground py-3 flex items-center justify-center gap-2 font-medium text-sm hover:bg-primary/90 transition-colors"
+          >
+            <ShoppingCart size={16} />
+            Add to Cart
+          </button>
+        </div>
+      </div>
+
+      {/* Product Info */}
+      <div className="p-4 space-y-2">
+        <p className="text-xs text-primary font-medium uppercase tracking-wider">
+          {product.category.replace(/-/g, ' ')}
+        </p>
+        <h3 className="font-semibold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+          {product.name}
+        </h3>
+
+        {/* Rating */}
+        <div className="flex items-center gap-1.5">
+          <StarRatingDisplay rating={dynamicRating} size="sm" />
+          <span className="text-xs text-muted-foreground">({dynamicRating.toFixed(1)})</span>
+        </div>
+
+        {/* Price */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-bold text-foreground">₹{product.price.toLocaleString('en-IN')}</span>
+          <span className="text-xs text-muted-foreground">
+            Wholesale: ₹{product.wholesalePrice.toLocaleString('en-IN')}
+          </span>
         </div>
       </div>
     </a>

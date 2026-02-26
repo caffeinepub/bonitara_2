@@ -12,8 +12,13 @@ export default function CartPage() {
     <div className="container mx-auto px-4 py-24 text-center">
       <ShoppingBag size={48} className="text-muted-foreground mx-auto mb-4" />
       <h2 className="font-serif text-3xl text-charcoal mb-2">Your cart is empty</h2>
-      <p className="font-sans text-sm text-muted-foreground mb-8">Discover our premium collection and add items to your cart.</p>
-      <a href="#/category/soap-making" className="inline-flex items-center gap-2 px-8 py-3 bg-charcoal text-ivory font-sans text-sm tracking-widest hover:bg-gold transition-colors">
+      <p className="font-sans text-sm text-muted-foreground mb-8">
+        Discover our premium collection and add items to your cart.
+      </p>
+      <a
+        href="#/category/soap-making"
+        className="inline-flex items-center gap-2 px-8 py-3 bg-charcoal text-ivory font-sans text-sm tracking-widest hover:bg-gold transition-colors"
+      >
         SHOP NOW <ArrowRight size={14} />
       </a>
     </div>
@@ -32,19 +37,37 @@ export default function CartPage() {
                   <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
                 </a>
                 <div className="flex-1 min-w-0">
-                  <a href={`#/product/${item.product.id}`} className="font-serif text-base text-charcoal hover:text-gold transition-colors line-clamp-1">
+                  <a
+                    href={`#/product/${item.product.id}`}
+                    className="font-serif text-base text-charcoal hover:text-gold transition-colors line-clamp-1"
+                  >
                     {item.product.name}
                   </a>
                   <p className="font-sans text-xs text-muted-foreground mt-0.5">SKU: {item.product.sku}</p>
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center border border-border">
-                      <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="w-8 h-8 flex items-center justify-center hover:bg-beige transition-colors text-sm">−</button>
+                      <button
+                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                        className="w-8 h-8 flex items-center justify-center hover:bg-beige transition-colors text-sm"
+                      >
+                        −
+                      </button>
                       <span className="w-10 text-center font-sans text-sm">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center hover:bg-beige transition-colors text-sm">+</button>
+                      <button
+                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                        className="w-8 h-8 flex items-center justify-center hover:bg-beige transition-colors text-sm"
+                      >
+                        +
+                      </button>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="font-sans font-semibold text-charcoal">₹{item.product.price * item.quantity}</span>
-                      <button onClick={() => removeFromCart(item.product.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                      <span className="font-sans font-semibold text-charcoal">
+                        ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
+                      </span>
+                      <button
+                        onClick={() => removeFromCart(item.product.id)}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -52,7 +75,10 @@ export default function CartPage() {
                 </div>
               </div>
             ))}
-            <button onClick={clearCart} className="text-sm font-sans text-muted-foreground hover:text-destructive transition-colors">
+            <button
+              onClick={clearCart}
+              className="text-sm font-sans text-muted-foreground hover:text-destructive transition-colors"
+            >
               Clear cart
             </button>
           </div>
@@ -63,7 +89,7 @@ export default function CartPage() {
             <div className="space-y-3 text-sm font-sans mb-6">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="text-charcoal">₹{subtotal}</span>
+                <span className="text-charcoal">₹{subtotal.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
@@ -72,11 +98,13 @@ export default function CartPage() {
                 </span>
               </div>
               {shipping > 0 && (
-                <p className="text-xs text-muted-foreground">Add ₹{999 - subtotal} more for free shipping</p>
+                <p className="text-xs text-muted-foreground">
+                  Add ₹{(999 - subtotal).toLocaleString('en-IN')} more for free shipping
+                </p>
               )}
               <div className="border-t border-border pt-3 flex justify-between font-semibold text-base">
                 <span className="text-charcoal">Total</span>
-                <span className="text-charcoal">₹{total}</span>
+                <span className="text-charcoal">₹{total.toLocaleString('en-IN')}</span>
               </div>
             </div>
             <a
@@ -85,7 +113,10 @@ export default function CartPage() {
             >
               PROCEED TO CHECKOUT <ArrowRight size={14} />
             </a>
-            <a href="#/category/soap-making" className="block text-center mt-3 text-sm font-sans text-muted-foreground hover:text-gold transition-colors">
+            <a
+              href="#/category/soap-making"
+              className="block text-center mt-3 text-sm font-sans text-muted-foreground hover:text-gold transition-colors"
+            >
               Continue Shopping
             </a>
           </div>

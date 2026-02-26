@@ -2,115 +2,18 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-build-a-home-page-with-a-full-width-hero-section-featured-categories-section-soap-making-candle-making-resin-art-fragrance-best-sellers-product-grid-about-brand-story-section-customer-reviews-carousel-and-newsletter-signup-section",
-      "featureTitle": "Build a Home page with a full-width hero section, featured categories section (Soap Making, Candle Making, Resin Art, Fragrance), best sellers product grid, about/brand story section, customer reviews carousel, and newsletter signup section.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/HomePage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-create-4-product-category-pages-soap-making-candle-making-resin-art-and-fragrance-each-displaying-25-products-with-filtering-and-sorting-options",
-      "featureTitle": "Create 4 product category pages — Soap Making, Candle Making, Resin Art, and Fragrance — each displaying 25+ products with filtering and sorting options.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/ProductCard.tsx",
-        "frontend/src/pages/CategoryPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-build-individual-product-detail-pages-showing-full-product-info-name-description-price-sku-stock-status-image-gallery-related-products-and-add-to-cart-wishlist-controls",
-      "featureTitle": "Build individual product detail pages showing full product info: name, description, price, SKU, stock status, image gallery, related products, and Add to Cart / Wishlist controls.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/ProductDetailPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-a-shopping-cart-with-item-management-add-remove-update-quantity-subtotal-calculation-and-proceed-to-checkout-flow",
-      "featureTitle": "Implement a shopping cart with item management (add, remove, update quantity), subtotal calculation, and proceed to checkout flow.",
+      "featureId": "feature-add-a-manual-email-password-login-and-registration-system-to-the-site-the-login-page-must-present-two-options-1-manual-login-with-email-and-password-fields-and-a-login-button-and-2-internet-identity-existing-the-registration-page-must-present-two-options-1-manual-registration-with-name-email-password-and-confirm-password-fields-and-a-register-button-and-2-internet-identity-both-pages-must-be-clearly-laid-out-so-regular-users-and-the-admin-can-easily-understand-and-use-them-the-admin-can-use-username-admin-and-password-bonitara-2024-via-the-manual-login-path-store-registered-user-credentials-in-the-motoko-backend-and-validate-login-against-stored-records",
+      "featureTitle": "Add a manual email/password login and registration system to the site. The login page must present two options: (1) Manual login with email and password fields and a 'Login' button, and (2) Internet Identity (existing). The registration page must present two options: (1) Manual registration with name, email, password, and confirm password fields and a 'Register' button, and (2) Internet Identity. Both pages must be clearly laid out so regular users and the admin can easily understand and use them. The admin can use username 'admin' and password 'Bonitara@2024' via the manual login path. Store registered user credentials in the Motoko backend and validate login against stored records.",
       "files": [
         "frontend/src/App.tsx",
         "frontend/src/components/Header.tsx",
-        "frontend/src/pages/CartPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-build-a-checkout-page-with-shipping-address-form-order-summary-and-payment-method-selection-supporting-razorpay-stripe-and-upi-placeholder-options",
-      "featureTitle": "Build a checkout page with shipping address form, order summary, and payment method selection supporting Razorpay, Stripe, and UPI placeholder options.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/CheckoutPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-user-account-system-with-registration-login-profile-management-order-history-and-order-tracking",
-      "featureTitle": "Implement user account system with registration, login, profile management, order history, and order tracking.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/Header.tsx",
+        "frontend/src/components/ProtectedRoute.tsx",
+        "frontend/src/hooks/useManualAuth.ts",
+        "frontend/src/pages/AdminDashboardPage.tsx",
+        "frontend/src/pages/LoginPage.tsx",
         "frontend/src/pages/OrderHistoryPage.tsx",
-        "frontend/src/pages/ProfilePage.tsx"
+        "frontend/src/pages/ProfilePage.tsx",
+        "frontend/src/pages/RegisterPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -121,123 +24,22 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-6"
+        "REQ-36"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-build-a-wholesale-page-with-bulk-pricing-tiers-moq-minimum-order-quantity-information-private-label-details-gst-information-and-an-email-enabled-inquiry-form",
-      "featureTitle": "Build a Wholesale page with bulk pricing tiers, MOQ (minimum order quantity) information, private label details, GST information, and an email-enabled inquiry form.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/WholesalePage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-7"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-create-static-informational-pages-faq-shipping-policy-terms-conditions-return-refund-policy-and-contact-us-with-a-functional-contact-form",
-      "featureTitle": "Create static informational pages: FAQ, Shipping Policy, Terms & Conditions, Return & Refund Policy, and Contact Us with a functional contact form.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/Footer.tsx",
-        "frontend/src/pages/ContactPage.tsx",
-        "frontend/src/pages/FAQPage.tsx",
-        "frontend/src/pages/ReturnPolicyPage.tsx",
-        "frontend/src/pages/ShippingPolicyPage.tsx",
-        "frontend/src/pages/TermsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-8"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-build-an-admin-dashboard-allowing-management-of-products-add-edit-delete-inventory-levels-order-management-with-status-updates-and-viewing-wholesale-and-contact-inquiries",
-      "featureTitle": "Build an Admin Dashboard allowing management of products (add/edit/delete), inventory levels, order management with status updates, and viewing wholesale and contact inquiries.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/AdminDashboardPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-9"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-build-a-blog-section-with-a-listing-page-and-individual-blog-post-detail-pages",
-      "featureTitle": "Build a Blog section with a listing page and individual blog post detail pages.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/BlogListingPage.tsx",
-        "frontend/src/pages/BlogPostPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-10"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-apply-a-luxury-visual-theme-across-all-pages-using-an-ivory-beige-soft-gold-charcoal-color-palette-elegant-serif-typography-for-headings-smooth-animations-hover-effects-on-interactive-elements-and-fully-mobile-responsive-layouts",
-      "featureTitle": "Apply a luxury visual theme across all pages using an ivory/beige/soft gold/charcoal color palette, elegant serif typography for headings, smooth animations, hover effects on interactive elements, and fully mobile-responsive layouts.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/index.css",
-        "frontend/tailwind.config.js"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-11"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-generate-and-render-a-luxury-brand-hero-background-image-and-a-bonitara-logo-as-static-assets-used-throughout-the-site",
-      "featureTitle": "Generate and render a luxury brand hero background image and a BONITARA logo as static assets used throughout the site.",
+      "featureId": "feature-perform-a-comprehensive-mobile-and-responsive-layout-pass-across-all-pages-of-the-bonitara-site-every-page-home-category-productdetail-cart-checkout-profile-orderhistory-blog-wholesale-faq-shippingpolicy-terms-returnpolicy-contactus-and-admindashboard-must-render-correctly-and-without-overflow-broken-grids-or-misaligned-elements-on-mobile-320px-tablet-768px-and-desktop-1280px-breakpoints-all-interactive-elements-buttons-cards-modals-dropdowns-forms-navigation-menus-must-have-touch-friendly-tap-targets-minimum-44px-images-must-resize-correctly-without-distortion-font-sizes-must-scale-appropriately-across-breakpoints-the-hamburger-mobile-menu-must-open-and-close-correctly-modals-and-overlays-must-display-properly-on-small-screens",
+      "featureTitle": "Perform a comprehensive mobile and responsive layout pass across all pages of the BONITARA site. Every page — Home, Category, ProductDetail, Cart, Checkout, Profile, OrderHistory, Blog, Wholesale, FAQ, ShippingPolicy, Terms, ReturnPolicy, ContactUs, and AdminDashboard — must render correctly and without overflow, broken grids, or misaligned elements on mobile (320px+), tablet (768px+), and desktop (1280px+) breakpoints. All interactive elements (buttons, cards, modals, dropdowns, forms, navigation menus) must have touch-friendly tap targets (minimum 44px). Images must resize correctly without distortion. Font sizes must scale appropriately across breakpoints. The hamburger mobile menu must open and close correctly. Modals and overlays must display properly on small screens.",
       "files": [
         "frontend/src/components/Footer.tsx",
-        "frontend/src/components/Header.tsx"
+        "frontend/src/components/Header.tsx",
+        "frontend/src/pages/AdminDashboardPage.tsx",
+        "frontend/src/pages/HomePage.tsx",
+        "frontend/src/pages/LoginPage.tsx",
+        "frontend/src/pages/OrderHistoryPage.tsx",
+        "frontend/src/pages/ProfilePage.tsx",
+        "frontend/src/pages/RegisterPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -248,7 +50,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-12"
+        "REQ-37"
       ],
       "confidence": "high"
     }

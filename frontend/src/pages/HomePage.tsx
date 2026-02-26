@@ -1,104 +1,183 @@
-import React, { useState } from 'react';
-import { ArrowRight, Star, Shield, Truck, Award, Leaf, ChevronLeft, ChevronRight } from 'lucide-react';
-import { products, categories } from '../data/products';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Star, ArrowRight, Truck, Shield, Leaf, Award } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { toast } from 'sonner';
+import { products } from '../data/products';
 
-const reviews = [
-  { name: 'Priya Sharma', rating: 5, text: 'Absolutely love the quality of BONITARA products! The goat milk soap base is incredibly creamy and my customers keep coming back for more.', location: 'Mumbai' },
-  { name: 'Ananya Patel', rating: 5, text: 'The soy wax and wooden wicks are top-notch. My candles have never burned so cleanly. Highly recommend for serious candle makers!', location: 'Ahmedabad' },
-  { name: 'Ritu Verma', rating: 5, text: 'The epoxy resin is crystal clear with minimal bubbles. The pigment set is vibrant and the customer service is exceptional.', location: 'Delhi' },
-  { name: 'Meera Krishnan', rating: 5, text: 'Best fragrance oils I have ever used. The oud and rose blend is absolutely divine. Fast shipping and beautiful packaging too!', location: 'Bangalore' },
-  { name: 'Sunita Joshi', rating: 5, text: 'BONITARA has transformed my small business. The wholesale pricing is fair and the quality is consistently excellent.', location: 'Pune' },
+const heroSlides = [
+  {
+    image: '/assets/generated/hero-banner.dim_1920x900.png',
+    title: 'Luxury Handcrafted',
+    subtitle: 'Home Fragrances',
+    description: 'Elevate your space with our artisanal candles, perfumes, and resin art — crafted with the finest natural ingredients.',
+    cta: 'Shop Now',
+    href: '#/category/candles',
+  },
+  {
+    image: '/assets/generated/hero-banner.dim_1920x900.png',
+    title: 'Pure & Natural',
+    subtitle: 'Soap Collection',
+    description: 'Indulge in our handmade soaps infused with botanical extracts and essential oils for a luxurious bathing experience.',
+    cta: 'Explore Soaps',
+    href: '#/category/soaps',
+  },
+  {
+    image: '/assets/generated/hero-banner.dim_1920x900.png',
+    title: 'Artisan Resin',
+    subtitle: 'Unique Creations',
+    description: 'Each piece is a one-of-a-kind work of art, handcrafted with premium resin and natural elements.',
+    cta: 'View Collection',
+    href: '#/category/resin',
+  },
 ];
 
-const whyUs = [
-  { icon: Award, title: 'Premium Quality', desc: 'Every ingredient is sourced from trusted suppliers and tested to meet cosmetic-grade standards.' },
-  { icon: Shield, title: 'Cosmetic Grade', desc: 'All products are certified cosmetic grade, safe for skin contact and professional use.' },
-  { icon: Leaf, title: 'Trusted Ingredients', desc: 'Natural, ethically sourced ingredients with full transparency on origin and specifications.' },
-  { icon: Truck, title: 'Fast Shipping', desc: 'Orders dispatched within 1–3 business days with reliable pan-India delivery.' },
+const categories = [
+  { name: 'Candles', image: '/assets/generated/category-candle.dim_600x400.png', slug: 'candles', count: '24 Products' },
+  { name: 'Fragrances', image: '/assets/generated/category-fragrance.dim_600x400.png', slug: 'fragrances', count: '18 Products' },
+  { name: 'Resin Art', image: '/assets/generated/category-resin.dim_600x400.png', slug: 'resin', count: '12 Products' },
+  { name: 'Soaps', image: '/assets/generated/category-soap.dim_600x400.png', slug: 'soaps', count: '20 Products' },
+];
+
+const features = [
+  { icon: Leaf, title: 'Natural Ingredients', desc: '100% natural, sustainably sourced' },
+  { icon: Award, title: 'Handcrafted Quality', desc: 'Made with love and expertise' },
+  { icon: Truck, title: 'Pan India Delivery', desc: 'Fast & secure shipping' },
+  { icon: Shield, title: 'Satisfaction Guaranteed', desc: 'Easy returns & exchanges' },
+];
+
+const testimonials = [
+  { name: 'Priya Sharma', location: 'Mumbai', rating: 5, text: 'The Sandalwood Dreams candle is absolutely divine! The fragrance fills my entire home and lasts for hours. BONITARA has become my go-to for all home fragrance needs.' },
+  { name: 'Rahul Mehta', location: 'Delhi', rating: 5, text: 'Ordered the resin art piece as a gift and my wife was absolutely thrilled. The craftsmanship is exceptional and the packaging was beautiful.' },
+  { name: 'Anita Patel', location: 'Bangalore', rating: 5, text: 'The soap collection is incredible. My skin feels so soft and the natural ingredients make such a difference. Will definitely be ordering again!' },
 ];
 
 export default function HomePage() {
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
-  const [reviewIdx, setReviewIdx] = useState(0);
 
-  const bestSellers = products.filter(p => p.isBestSeller).slice(0, 8);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const bestSellers = products.slice(0, 8);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    setSubscribed(true);
-    toast.success('Thank you for subscribing!');
+    if (email) {
+      setSubscribed(true);
+      setEmail('');
+    }
   };
 
-  const prevReview = () => setReviewIdx(i => (i === 0 ? reviews.length - 1 : i - 1));
-  const nextReview = () => setReviewIdx(i => (i === reviews.length - 1 ? 0 : i + 1));
-
   return (
-    <div>
-      {/* Hero */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-charcoal">
-        <img
-          src="/assets/generated/hero-banner.dim_1920x900.png"
-          alt="BONITARA Hero"
-          className="absolute inset-0 w-full h-full object-cover opacity-40"
-        />
-        <div className="relative z-10 text-center px-4 max-w-3xl mx-auto animate-fade-in-up">
-          <p className="font-sans text-gold tracking-[0.3em] text-sm uppercase mb-4">Welcome to</p>
-          <h1 className="font-serif text-6xl md:text-8xl text-ivory font-light mb-4 leading-none">
-            BONITARA
-          </h1>
-          <p className="font-serif text-xl md:text-2xl text-ivory/80 italic mb-8">
-            Inspired By Elegance
-          </p>
-          <p className="font-sans text-ivory/60 text-sm md:text-base mb-10 max-w-xl mx-auto leading-relaxed">
-            Premium cosmetic-grade raw materials for soap making, candle making, resin art, and fragrance crafting.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="#/category/soap-making"
-              className="px-8 py-3 bg-gold text-white font-sans font-medium text-sm tracking-widest hover:bg-gold-dark transition-colors duration-200"
-            >
-              SHOP NOW
-            </a>
-            <a
-              href="#/category/soap-making"
-              className="px-8 py-3 border border-ivory/40 text-ivory font-sans font-medium text-sm tracking-widest hover:border-gold hover:text-gold transition-colors duration-200"
-            >
-              EXPLORE CATEGORIES
-            </a>
+    <div className="min-h-screen bg-background">
+      {/* Hero Slider */}
+      <section className="relative h-[60vh] sm:h-[70vh] lg:h-[85vh] overflow-hidden">
+        {heroSlides.map((slide, idx) => (
+          <div
+            key={idx}
+            className={`absolute inset-0 transition-opacity duration-1000 ${idx === currentSlide ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-foreground/40" />
+            <div className="absolute inset-0 flex items-center justify-center sm:justify-start">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                <div className="max-w-xl text-center sm:text-left">
+                  <p className="text-primary text-sm sm:text-base font-medium tracking-widest uppercase mb-2 sm:mb-3 animate-fadeIn">
+                    {slide.subtitle}
+                  </p>
+                  <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl xl:text-7xl text-white leading-tight mb-3 sm:mb-4 animate-slideUp">
+                    {slide.title}
+                  </h1>
+                  <p className="text-white/80 text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 leading-relaxed animate-fadeIn hidden sm:block">
+                    {slide.description}
+                  </p>
+                  <a
+                    href={slide.href}
+                    className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground rounded-full font-medium hover:bg-primary/90 transition-all hover:gap-3 text-sm sm:text-base min-h-[44px]"
+                  >
+                    {slide.cta} <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-ivory/40">
-          <span className="font-sans text-xs tracking-widest">SCROLL</span>
-          <div className="w-px h-8 bg-ivory/20" />
+        ))}
+
+        {/* Slider controls */}
+        <button
+          onClick={() => setCurrentSlide(prev => (prev - 1 + heroSlides.length) % heroSlides.length)}
+          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
+        <button
+          onClick={() => setCurrentSlide(prev => (prev + 1) % heroSlides.length)}
+          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors"
+          aria-label="Next slide"
+        >
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
+
+        {/* Dots */}
+        <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+          {heroSlides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentSlide(idx)}
+              className={`w-2 h-2 rounded-full transition-all ${idx === currentSlide ? 'bg-primary w-6' : 'bg-white/50'}`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
         </div>
       </section>
 
-      {/* Featured Categories */}
-      <section className="section-padding bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <p className="font-sans text-gold tracking-[0.25em] text-xs uppercase mb-3">Explore</p>
-            <h2 className="font-serif text-4xl md:text-5xl text-charcoal">Our Collections</h2>
+      {/* Features Bar */}
+      <section className="bg-muted/30 border-y border-border py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {features.map(f => (
+              <div key={f.title} className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                  <f.icon className="w-5 h-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{f.title}</p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">{f.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="py-12 sm:py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-12">
+            <p className="text-primary text-xs sm:text-sm font-medium tracking-widest uppercase mb-2">Explore</p>
+            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-foreground">Shop by Category</h2>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             {categories.map(cat => (
-              <a key={cat.slug} href={`#/category/${cat.slug}`} className="group relative overflow-hidden rounded-sm aspect-[3/4] block">
+              <a
+                key={cat.slug}
+                href={`#/category/${cat.slug}`}
+                className="group relative overflow-hidden rounded-xl sm:rounded-2xl aspect-[3/4] block"
+              >
                 <img
                   src={cat.image}
                   alt={cat.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="font-serif text-2xl text-ivory mb-1">{cat.name}</h3>
-                  <p className="font-sans text-ivory/60 text-xs mb-3 line-clamp-2">{cat.description}</p>
-                  <span className="inline-flex items-center gap-1.5 text-gold font-sans text-xs tracking-widest group-hover:gap-3 transition-all duration-200">
-                    SHOP NOW <ArrowRight size={12} />
-                  </span>
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 lg:p-6">
+                  <h3 className="font-serif text-lg sm:text-xl lg:text-2xl text-white">{cat.name}</h3>
+                  <p className="text-white/70 text-xs sm:text-sm mt-0.5">{cat.count}</p>
                 </div>
               </a>
             ))}
@@ -107,148 +186,119 @@ export default function HomePage() {
       </section>
 
       {/* Best Sellers */}
-      <section className="section-padding bg-beige">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <p className="font-sans text-gold tracking-[0.25em] text-xs uppercase mb-3">Curated For You</p>
-            <h2 className="font-serif text-4xl md:text-5xl text-charcoal">Best Sellers</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {bestSellers.map(p => <ProductCard key={p.id} product={p} />)}
-          </div>
-          <div className="text-center mt-10">
-            <a href="#/category/soap-making" className="inline-flex items-center gap-2 px-8 py-3 border border-charcoal text-charcoal font-sans text-sm tracking-widest hover:bg-charcoal hover:text-ivory transition-all duration-200">
-              VIEW ALL PRODUCTS <ArrowRight size={14} />
+      <section className="py-12 sm:py-16 lg:py-20 bg-muted/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-12">
+            <div>
+              <p className="text-primary text-xs sm:text-sm font-medium tracking-widest uppercase mb-2">Popular</p>
+              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-foreground">Best Sellers</h2>
+            </div>
+            <a href="#/category/candles" className="flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all self-start sm:self-auto">
+              View All <ArrowRight className="w-4 h-4" />
             </a>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {bestSellers.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
           </div>
         </div>
       </section>
 
       {/* Brand Story */}
-      <section className="section-padding bg-background">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="font-sans text-gold tracking-[0.25em] text-xs uppercase mb-4">Our Story</p>
-              <h2 className="font-serif text-4xl md:text-5xl text-charcoal mb-6 leading-tight">
-                Crafted With<br />Passion & Purpose
+      <section className="py-12 sm:py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            <div className="order-2 lg:order-1">
+              <p className="text-primary text-xs sm:text-sm font-medium tracking-widest uppercase mb-3">Our Story</p>
+              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-foreground mb-4 sm:mb-6">
+                Crafted with <span className="text-primary italic">Passion</span>
               </h2>
-              <p className="font-sans text-charcoal-light text-sm leading-relaxed mb-4">
-                BONITARA was born from a deep love of artisan crafting and a belief that every maker deserves access to the finest ingredients. We source our raw materials from trusted suppliers across India and the world, ensuring every product meets the highest cosmetic-grade standards.
+              <p className="text-muted-foreground leading-relaxed mb-4 text-sm sm:text-base">
+                BONITARA was born from a deep love for natural fragrances and artisanal craftsmanship. Every product we create is a labor of love, made with the finest natural ingredients sourced from across India.
               </p>
-              <p className="font-sans text-charcoal-light text-sm leading-relaxed mb-6">
-                From the lavender fields of Bulgaria to the sandalwood forests of Mysore, we bring the world's finest ingredients to your workshop. Whether you are a hobbyist discovering the joy of soap making or a professional building a luxury brand, BONITARA is your trusted partner.
+              <p className="text-muted-foreground leading-relaxed mb-6 sm:mb-8 text-sm sm:text-base">
+                Our mission is to bring luxury home fragrances to every Indian home, celebrating the rich tradition of natural scents while embracing modern aesthetics.
               </p>
-              <a href="#/wholesale" className="inline-flex items-center gap-2 text-gold font-sans text-sm tracking-widest hover:gap-4 transition-all duration-200">
-                EXPLORE WHOLESALE <ArrowRight size={14} />
+              <a href="#/wholesale" className="inline-flex items-center gap-2 px-6 py-3 border border-primary text-primary rounded-full font-medium hover:bg-primary hover:text-primary-foreground transition-all text-sm min-h-[44px]">
+                Learn More <ArrowRight className="w-4 h-4" />
               </a>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="aspect-square overflow-hidden rounded-sm">
-                <img src="/assets/generated/category-soap.dim_600x400.png" alt="Soap Making" className="w-full h-full object-cover" />
-              </div>
-              <div className="aspect-square overflow-hidden rounded-sm mt-8">
-                <img src="/assets/generated/category-candle.dim_600x400.png" alt="Candle Making" className="w-full h-full object-cover" />
-              </div>
-              <div className="aspect-square overflow-hidden rounded-sm -mt-8">
-                <img src="/assets/generated/category-resin.dim_600x400.png" alt="Resin Art" className="w-full h-full object-cover" />
-              </div>
-              <div className="aspect-square overflow-hidden rounded-sm">
-                <img src="/assets/generated/category-fragrance.dim_600x400.png" alt="Fragrance" className="w-full h-full object-cover" />
+            <div className="order-1 lg:order-2">
+              <div className="relative">
+                <img
+                  src="/assets/generated/category-candle.dim_600x400.png"
+                  alt="Our Story"
+                  className="w-full rounded-2xl object-cover aspect-[4/3]"
+                />
+                <div className="absolute -bottom-4 -left-4 bg-primary text-primary-foreground p-4 sm:p-6 rounded-xl shadow-lg">
+                  <p className="font-serif text-2xl sm:text-3xl">5+</p>
+                  <p className="text-xs sm:text-sm opacity-90">Years of Craft</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="section-padding bg-charcoal">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <p className="font-sans text-gold tracking-[0.25em] text-xs uppercase mb-3">Why BONITARA</p>
-            <h2 className="font-serif text-4xl md:text-5xl text-ivory">The BONITARA Difference</h2>
+      {/* Testimonials */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-muted/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-12">
+            <p className="text-primary text-xs sm:text-sm font-medium tracking-widest uppercase mb-2">Reviews</p>
+            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-foreground">What Our Customers Say</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {whyUs.map(item => (
-              <div key={item.title} className="text-center">
-                <div className="w-14 h-14 rounded-full border border-gold/30 flex items-center justify-center mx-auto mb-4">
-                  <item.icon size={22} className="text-gold" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {testimonials.map((t, idx) => (
+              <div key={idx} className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+                <div className="flex gap-1 mb-3">
+                  {Array.from({ length: t.rating }).map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
                 </div>
-                <h3 className="font-serif text-xl text-ivory mb-2">{item.title}</h3>
-                <p className="font-sans text-ivory/50 text-sm leading-relaxed">{item.desc}</p>
+                <p className="text-foreground/80 text-sm leading-relaxed mb-4 italic">"{t.text}"</p>
+                <div>
+                  <p className="font-medium text-foreground text-sm">{t.name}</p>
+                  <p className="text-muted-foreground text-xs">{t.location}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Reviews */}
-      <section className="section-padding bg-beige">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <p className="font-sans text-gold tracking-[0.25em] text-xs uppercase mb-3">Testimonials</p>
-            <h2 className="font-serif text-4xl md:text-5xl text-charcoal">What Our Customers Say</h2>
-          </div>
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-card border border-border p-8 rounded-sm text-center luxury-shadow">
-              <div className="flex justify-center gap-1 mb-4">
-                {Array.from({ length: reviews[reviewIdx].rating }).map((_, i) => (
-                  <Star key={i} size={16} className="fill-gold text-gold" />
-                ))}
-              </div>
-              <p className="font-serif text-xl text-charcoal italic mb-6 leading-relaxed">
-                "{reviews[reviewIdx].text}"
-              </p>
-              <p className="font-sans font-medium text-charcoal text-sm">{reviews[reviewIdx].name}</p>
-              <p className="font-sans text-muted-foreground text-xs mt-1">{reviews[reviewIdx].location}</p>
-            </div>
-            <div className="flex items-center justify-center gap-4 mt-6">
-              <button onClick={prevReview} className="w-10 h-10 border border-border rounded-full flex items-center justify-center hover:border-gold hover:text-gold transition-colors">
-                <ChevronLeft size={16} />
-              </button>
-              <div className="flex gap-2">
-                {reviews.map((_, i) => (
-                  <button key={i} onClick={() => setReviewIdx(i)} className={`w-2 h-2 rounded-full transition-colors ${i === reviewIdx ? 'bg-gold' : 'bg-border'}`} />
-                ))}
-              </div>
-              <button onClick={nextReview} className="w-10 h-10 border border-border rounded-full flex items-center justify-center hover:border-gold hover:text-gold transition-colors">
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Newsletter */}
-      <section className="section-padding bg-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-xl mx-auto text-center">
-            <p className="font-sans text-gold tracking-[0.25em] text-xs uppercase mb-3">Stay Connected</p>
-            <h2 className="font-serif text-4xl text-charcoal mb-4">Join Our Community</h2>
-            <p className="font-sans text-muted-foreground text-sm mb-8">
-              Subscribe for exclusive offers, new product launches, crafting tips, and inspiration delivered to your inbox.
-            </p>
-            {subscribed ? (
-              <div className="bg-beige border border-gold/30 rounded-sm p-6">
-                <p className="font-serif text-xl text-charcoal">Thank you for subscribing!</p>
-                <p className="font-sans text-sm text-muted-foreground mt-2">You'll receive our next newsletter soon.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubscribe} className="flex gap-0">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="Your email address"
-                  required
-                  className="flex-1 px-4 py-3 border border-border bg-card font-sans text-sm focus:outline-none focus:border-gold transition-colors"
-                />
-                <button type="submit" className="px-6 py-3 bg-charcoal text-ivory font-sans text-sm tracking-widest hover:bg-gold transition-colors duration-200 whitespace-nowrap">
-                  SUBSCRIBE
-                </button>
-              </form>
-            )}
-          </div>
+      <section className="py-12 sm:py-16 lg:py-20 bg-primary/5 border-y border-primary/20">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-primary text-xs sm:text-sm font-medium tracking-widest uppercase mb-3">Stay Connected</p>
+          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-foreground mb-3 sm:mb-4">
+            Join the BONITARA Family
+          </h2>
+          <p className="text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base">
+            Subscribe for exclusive offers, new arrivals, and fragrance inspiration delivered to your inbox.
+          </p>
+          {subscribed ? (
+            <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl px-6 py-4 text-sm font-medium">
+              🎉 Thank you for subscribing! Welcome to the BONITARA family.
+            </div>
+          ) : (
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Enter your email address"
+                className="flex-1 h-12 px-4 rounded-full border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
+                required
+              />
+              <button
+                type="submit"
+                className="h-12 px-6 bg-primary text-primary-foreground rounded-full font-medium hover:bg-primary/90 transition-colors text-sm whitespace-nowrap min-h-[44px]"
+              >
+                Subscribe
+              </button>
+            </form>
+          )}
         </div>
       </section>
     </div>

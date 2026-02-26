@@ -1,146 +1,55 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T09:02:02.822Z",
-  "summary": "The diff implements most of the requested features for the BONITARA luxury eCommerce platform. Core pages (Home, Category, Product Detail, Cart, Checkout, Wholesale, FAQ, Shipping Policy, Terms, Return Policy, Contact, Blog, Order History, Admin Dashboard, Profile) are present, along with the luxury theme, product data, and static asset references. However, several specific acceptance criteria are not fully met or are missing, and the backend main.mo is essentially a stub with only access control, lacking data-store logic for products, orders, inquiries, blog posts, and contact form submissions that multiple requirements demand.",
+  "generatedAt": "2026-02-26T20:10:19.248Z",
+  "summary": "The diff implements REQ-36 (manual email/password login and registration system) comprehensively, including backend Motoko functions, frontend login/register pages with tabs, protected routes, and header integration. REQ-37 (comprehensive mobile/responsive pass) shows partial evidence — some pages have responsive classes added — but there is no dedicated, systematic responsive pass across all 15+ required pages with explicit mobile breakpoint handling.",
   "missing_requirements": [
     {
-      "requirement": "Backend logic for storing wholesale inquiries — form submission stores the inquiry in the backend actor",
-      "reason": "backend/main.mo is a minimal stub with only access control. There are no Motoko functions for storing or retrieving wholesale inquiries.",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "requirement": "Backend logic for storing contact form submissions in the backend actor",
-      "reason": "backend/main.mo contains no functions for contact form data. ContactPage simulates submission with a timeout but does not call any actor method.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/pages/ContactPage.tsx"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "requirement": "Order tracking page — allows users to view current order status",
-      "reason": "The diff includes OrderHistoryPage but no dedicated OrderTrackingPage is present in the listed files.",
-      "evidence": [
-        "frontend/src/pages/OrderHistoryPage.tsx"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "requirement": "Profile page shows saved address and account details",
-      "reason": "A ProfilePage import is present in App.tsx but no ProfilePage.tsx content is included in the diff summary, so implementation cannot be confirmed.",
-      "evidence": [
-        "frontend/src/App.tsx"
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "requirement": "Admin product CRUD and inventory updates must persist via backend actor",
-      "reason": "AdminDashboardPage shows product management UI but backend/main.mo has no product CRUD or inventory update methods; changes would not persist.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/pages/AdminDashboardPage.tsx"
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "requirement": "Admin can create and manage blog posts",
-      "reason": "BlogListingPage and BlogPostPage exist for viewing, but there is no admin blog post creation or management UI visible. AdminDashboardPage tabs are overview/products/orders/inquiries with no blog tab.",
-      "evidence": [
-        "frontend/src/pages/AdminDashboardPage.tsx",
-        "frontend/src/pages/BlogListingPage.tsx"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Product detail page displays image gallery with multiple images",
-      "reason": "Product data in products.ts stores a single image field per product, not an array. There is no evidence of a multi-image gallery implementation.",
-      "evidence": [
-        "frontend/src/data/products.ts"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "requirement": "Products can be sorted by popularity and newest in addition to price",
-      "reason": "CategoryPage sort select has default, price-asc, price-desc, and name-asc options but no popularity or newest sort options as required by the acceptance criteria.",
-      "evidence": [
-        "frontend/src/pages/CategoryPage.tsx"
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "requirement": "All 6 required static image files served from frontend/public/assets/generated",
-      "reason": "Images are referenced in code but no files under frontend/public/assets/generated are listed as added in the diff. The actual image files are not confirmed as present.",
+      "id": "REQ-37",
+      "requirement": "Comprehensive mobile and responsive layout pass across ALL pages: Home, Category, ProductDetail, Cart, Checkout, Profile, OrderHistory, Blog, Wholesale, FAQ, ShippingPolicy, Terms, ReturnPolicy, ContactUs, and AdminDashboard — with 320px/768px/1280px breakpoints, 44px touch targets, no overflow, proper product grids, hamburger menu, scrollable modals, etc.",
+      "reason": "The diff modifies only a handful of page files (HomePage, OrderHistoryPage, ProfilePage, AdminDashboardPage) and components (Header, Footer). Pages like CategoryPage, ProductDetailPage, CartPage, CheckoutPage, BlogListingPage, BlogPostPage, WholesalePage, FAQPage, ShippingPolicyPage, TermsPage, ReturnPolicyPage, ContactPage are listed only in the file-summaries metadata with brief descriptions and no evidence of responsive-specific changes being applied. There is no systematic pass with documented breakpoint handling across all 15+ required pages.",
       "evidence": [
         "frontend/src/pages/HomePage.tsx",
-        "frontend/src/data/products.ts",
-        "frontend/src/components/Header.tsx"
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "requirement": "Shipping Policy, Terms and Conditions, and Return and Refund Policy pages render with appropriate content sections",
-      "reason": "ShippingPolicyPage, TermsPage, and ReturnPolicyPage are imported in App.tsx but none of their file contents appear in the diff summary, so implementation cannot be confirmed.",
-      "evidence": [
-        "frontend/src/App.tsx"
+        "frontend/src/pages/OrderHistoryPage.tsx",
+        "frontend/src/pages/ProfilePage.tsx",
+        "frontend/src/pages/AdminDashboardPage.tsx",
+        "frontend/src/components/Header.tsx",
+        "frontend-file-summaries.txt"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Internet Identity (ICP) login integration via useInternetIdentity hook and principal-based access control in the backend",
-      "reason": "The build request explicitly lists third-party authentication as a non-goal and does not request ICP Internet Identity. The admin check uses ICP principal-based access control which was not requested.",
+      "description": "A backend migration module (migration.mo) was added to handle schema migration from an old actor state to a new one.",
+      "reason": "The build request did not request a migration module. It only required storing registered user credentials in the Motoko backend. The migration.mo file goes beyond the stated requirements.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/components/Header.tsx",
-        "frontend/src/pages/AdminDashboardPage.tsx",
-        "frontend/src/hooks/useInternetIdentity.ts"
+        "backend/migration.mo"
       ]
     },
     {
-      "description": "useActor hook calling actor._initializeAccessControlWithSecret with a caffeineAdminToken URL parameter",
-      "reason": "This framework-specific pattern was not requested in the build spec. The build request does not mention caffeineAdminToken or secret-parameter-based access control initialization.",
+      "description": "Admin dashboard has a separate inline admin login form that allows admin access without going through the main /login page.",
+      "reason": "REQ-36 specifies admin login via the manual login form on the login page. The AdminDashboardPage implements a secondary standalone admin login form that bypasses the main login page flow, which was not explicitly requested.",
       "evidence": [
-        "frontend/src/hooks/useActor.ts"
+        "frontend/src/pages/AdminDashboardPage.tsx"
       ]
     }
   ],
   "confidence": 0.72,
   "changed_files": [
-    "all_files_summary.json",
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.css",
-    "frontend/index.html",
     "frontend/src/App.tsx",
     "frontend/src/components/Footer.tsx",
     "frontend/src/components/Header.tsx",
-    "frontend/src/components/ProductCard.tsx",
-    "frontend/src/data/products.ts",
-    "frontend/src/hooks/useActor.ts",
-    "frontend/src/hooks/useInternetIdentity.ts",
-    "frontend/src/index.css",
-    "frontend/src/main.tsx",
+    "frontend/src/components/ProtectedRoute.tsx",
+    "frontend/src/hooks/useManualAuth.ts",
     "frontend/src/pages/AdminDashboardPage.tsx",
-    "frontend/src/pages/BlogListingPage.tsx",
-    "frontend/src/pages/BlogPostPage.tsx",
-    "frontend/src/pages/CartPage.tsx",
-    "frontend/src/pages/CategoryPage.tsx",
-    "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/pages/ContactPage.tsx",
-    "frontend/src/pages/FAQPage.tsx",
     "frontend/src/pages/HomePage.tsx",
+    "frontend/src/pages/LoginPage.tsx",
     "frontend/src/pages/OrderHistoryPage.tsx",
-    "frontend/src/pages/ProductDetailPage.tsx",
     "frontend/src/pages/ProfilePage.tsx",
-    "frontend/src/pages/ReturnPolicyPage.tsx",
-    "frontend/src/pages/ShippingPolicyPage.tsx",
-    "frontend/src/pages/TermsPage.tsx",
-    "frontend/src/pages/WholesalePage.tsx",
-    "frontend/src/utils/urlParams.ts",
-    "frontend/tailwind.config.js",
+    "frontend/src/pages/RegisterPage.tsx",
     "project_state.json"
   ]
 }

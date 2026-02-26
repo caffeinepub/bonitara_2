@@ -13,13 +13,68 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const ProductId = IDL.Nat;
+export const Rating = IDL.Nat;
+export const UserProfile = IDL.Record({
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+});
+export const Time = IDL.Int;
+export const Review = IDL.Record({
+  'id' : IDL.Nat,
+  'title' : IDL.Text,
+  'body' : IDL.Text,
+  'author' : IDL.Text,
+  'timestamp' : Time,
+  'rating' : Rating,
+});
+export const ProductReviews = IDL.Record({
+  'reviews' : IDL.Vec(Review),
+  'averageRating' : IDL.Opt(Rating),
+  'reviewCount' : IDL.Nat,
+});
+export const RegistrationInput = IDL.Record({
+  'password' : IDL.Text,
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+});
+export const ReviewInput = IDL.Record({
+  'title' : IDL.Text,
+  'body' : IDL.Text,
+  'author' : IDL.Text,
+  'rating' : Rating,
+});
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'adminCheck' : IDL.Func([], [], []),
+  'adminCheck' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], ['query']),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'assignUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'getAllProductAverageRatings' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(ProductId, IDL.Opt(Rating)))],
+      ['query'],
+    ),
+  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getProductRatingSummary' : IDL.Func(
+      [ProductId],
+      [IDL.Opt(ProductReviews)],
+      ['query'],
+    ),
+  'getProductReviewCount' : IDL.Func([ProductId], [IDL.Nat], ['query']),
+  'getReviews' : IDL.Func([ProductId], [ProductReviews], ['query']),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
+  'getUserRole' : IDL.Func([IDL.Principal], [UserRole], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'loginUser' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], ['query']),
+  'registerUser' : IDL.Func([RegistrationInput], [IDL.Bool], []),
+  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'submitReview' : IDL.Func([ProductId, ReviewInput], [], []),
 });
 
 export const idlInitArgs = [];
@@ -30,13 +85,65 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const ProductId = IDL.Nat;
+  const Rating = IDL.Nat;
+  const UserProfile = IDL.Record({ 'name' : IDL.Text, 'email' : IDL.Text });
+  const Time = IDL.Int;
+  const Review = IDL.Record({
+    'id' : IDL.Nat,
+    'title' : IDL.Text,
+    'body' : IDL.Text,
+    'author' : IDL.Text,
+    'timestamp' : Time,
+    'rating' : Rating,
+  });
+  const ProductReviews = IDL.Record({
+    'reviews' : IDL.Vec(Review),
+    'averageRating' : IDL.Opt(Rating),
+    'reviewCount' : IDL.Nat,
+  });
+  const RegistrationInput = IDL.Record({
+    'password' : IDL.Text,
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+  });
+  const ReviewInput = IDL.Record({
+    'title' : IDL.Text,
+    'body' : IDL.Text,
+    'author' : IDL.Text,
+    'rating' : Rating,
+  });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'adminCheck' : IDL.Func([], [], []),
+    'adminCheck' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], ['query']),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'assignUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'getAllProductAverageRatings' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(ProductId, IDL.Opt(Rating)))],
+        ['query'],
+      ),
+    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getProductRatingSummary' : IDL.Func(
+        [ProductId],
+        [IDL.Opt(ProductReviews)],
+        ['query'],
+      ),
+    'getProductReviewCount' : IDL.Func([ProductId], [IDL.Nat], ['query']),
+    'getReviews' : IDL.Func([ProductId], [ProductReviews], ['query']),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
+    'getUserRole' : IDL.Func([IDL.Principal], [UserRole], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'loginUser' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], ['query']),
+    'registerUser' : IDL.Func([RegistrationInput], [IDL.Bool], []),
+    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'submitReview' : IDL.Func([ProductId, ReviewInput], [], []),
   });
 };
 

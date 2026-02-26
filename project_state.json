@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
+  "projectStateVersion": 21,
   "summary": "Premium luxury eCommerce website for BONITARA – Inspired By Elegance. Features: Home page with hero, featured categories, best sellers, about section, reviews, newsletter; 4 main categories (Soap Making, Candle Making, Resin Art, Fragrance) each with 25+ products with full product details, pricing, SKU, stock, wishlist, related products; Wholesale page with inquiry form; FAQ, Shipping Policy, Terms & Conditions, Return & Refund Policy, Contact Us pages; cart, checkout, user accounts, order tracking, inventory management, admin dashboard, blog section; Razorpay/Stripe/UPI integration; luxury UI with ivory/beige/soft gold/charcoal palette, animations, hover effects, elegant typography; SEO optimized; email-enabled features (newsletter, contact form, wholesale inquiry form, order emails).",
   "architectural_notes": [
     "Brand name: BONITARA – Inspired By Elegance",
@@ -11,10 +11,18 @@
     "Email must be enabled on account for newsletter, contact form, wholesale inquiry, and order emails"
   ],
   "known_issues": [
-    "Previous build ran for 3+ days without completing — canceled and restarting"
+    "Previous build ran for 3+ days without completing — canceled and restarting",
+    "Clicking a product in suggestions does not scroll to top of page",
+    "Clicking any product always opens 'Rose Petal Soap' instead of the selected product — routing/state bug in product detail page",
+    "Page does not scroll to top on link/navigation click — needs global scroll-to-top on route change",
+    "Mobile menu icon on Home Screen does not open when clicked",
+    "Product visualization/detail page has layout alignment issues",
+    "Clicking 'Contact Us' in footer menu does not scroll to top of page",
+    "Layout regressed in latest build — previous version layout was working correctly; needs full restore",
+    "Login not working after latest build update",
+    "Footer menu link color showing as black (invisible/unreadable) — regression"
   ],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Luxury eCommerce hero banner with soft bokeh floral background in ivory and gold tones, elegant and minimal (hero-banner.dim_1920x900.png)\n- BONITARA brand wordmark logo in gold lettering on transparent background, serif font, refined and minimal (bonitara-logo.dim_400x120.png)\n- Soap Making category card background — artisan soap bars arranged elegantly on marble surface in warm tones (category-soap.dim_600x400.png)\n- Candle Making category card background — lit candles with soft glow on beige linen surface (category-candle.dim_600x400.png)\n- Resin Art category card background — colorful resin art pieces with gold accents on neutral background (category-resin.dim_600x400.png)\n- Fragrance category card background — perfume bottles and dried botanicals on ivory background (category-fragrance.dim_600x400.png)",
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-build-a-home-page-with-a-full-width-hero-section-featured-categories-section-soap-making-candle-making-resin-art-fragrance-best-sellers-product-grid-about-brand-story-section-customer-reviews-carousel-and-newsletter-signup-section",
@@ -111,6 +119,174 @@
         "REQ-12"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-hardcoded-admin-credentials-to-the-backend-and-display-them-clearly-on-the-admin-dashboard-login-screen-the-admin-username-should-be-admin-and-a-secure-default-password-e-g-bonitara-2024-should-be-set-and-checked-in-the-motoko-actor-s-admincheck-logic-display-the-credentials-id-and-password-visibly-on-the-admindashboardpage-for-easy-reference-during-development",
+      "title": "Add hardcoded admin credentials to the backend and display them clearly on the Admin Dashboard login screen. The admin username should be 'admin' and a secure default password (e.g., 'Bonitara@2024') should be set and checked in the Motoko actor's adminCheck logic. Display the credentials (ID and password) visibly on the AdminDashboardPage for easy reference during development.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-footer-menu-navigation-link-text-color-so-that-all-footer-links-and-menu-items-are-clearly-visible-against-the-footer-background-ensure-text-color-uses-a-legible-contrast-color-e-g-ivory-or-soft-gold-consistent-with-the-bonitara-luxury-theme",
+      "title": "Fix the footer menu/navigation link text color so that all footer links and menu items are clearly visible against the footer background. Ensure text color uses a legible contrast color (e.g., ivory or soft gold) consistent with the BONITARA luxury theme.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-when-a-user-clicks-on-a-product-from-the-suggestions-or-related-products-section-on-the-productdetailpage-the-page-must-automatically-scroll-to-the-top-before-rendering-the-new-product-s-details-implement-smooth-scroll-to-top-behavior-triggered-on-product-navigation-from-any-suggestion-or-related-product-click",
+      "title": "When a user clicks on a product from the suggestions or related products section on the ProductDetailPage, the page must automatically scroll to the top before rendering the new product's details. Implement smooth scroll-to-top behavior triggered on product navigation from any suggestion or related product click.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-improve-the-responsive-layout-and-animation-quality-across-all-pages-of-the-bonitara-site-ensure-every-page-renders-correctly-on-mobile-320px-tablet-768px-and-desktop-1280px-breakpoints-add-or-refine-smooth-css-tailwind-transitions-and-animations-for-interactive-elements-such-as-buttons-cards-modals-dropdowns-and-navigation-menus-ensure-no-layout-overflow-broken-grids-or-misaligned-elements-exist-on-small-screens",
+      "title": "Audit and improve the responsive layout and animation quality across all pages of the BONITARA site. Ensure every page renders correctly on mobile (320px+), tablet (768px+), and desktop (1280px+) breakpoints. Add or refine smooth CSS/Tailwind transitions and animations for interactive elements such as buttons, cards, modals, dropdowns, and navigation menus. Ensure no layout overflow, broken grids, or misaligned elements exist on small screens.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-productdetailpage-so-that-clicking-on-any-product-from-category-pages-home-page-best-sellers-related-products-or-any-other-listing-correctly-loads-and-displays-the-actual-selected-product-s-details-not-always-the-first-product-rose-petal-soap-the-product-to-display-must-be-determined-by-the-product-id-passed-via-the-url-routing-parameter-and-the-page-must-fetch-look-up-that-specific-product-from-the-products-data-by-its-id",
+      "title": "Fix the ProductDetailPage so that clicking on any product (from category pages, home page best sellers, related products, or any other listing) correctly loads and displays the actual selected product's details — not always the first product (Rose Petal Soap). The product to display must be determined by the product ID passed via the URL/routing parameter, and the page must fetch/look up that specific product from the products data by its ID.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-global-scroll-to-top-behavior-so-that-every-time-the-user-clicks-any-navigation-link-menu-item-product-card-footer-link-category-link-or-any-in-app-anchor-that-triggers-a-route-change-the-page-automatically-scrolls-to-the-top-position-0-0-before-rendering-the-new-page-content",
+      "title": "Implement a global scroll-to-top behavior so that every time the user clicks any navigation link, menu item, product card, footer link, category link, or any in-app anchor that triggers a route change, the page automatically scrolls to the top (position 0,0) before rendering the new page content.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-mobile-hamburger-menu-icon-in-the-header-component-so-that-clicking-it-on-the-home-screen-and-all-pages-correctly-toggles-open-the-mobile-navigation-menu-the-mobile-menu-state-must-update-on-click-the-menu-drawer-panel-must-become-visible-and-all-navigation-links-within-the-menu-must-be-accessible-and-functional",
+      "title": "Fix the mobile hamburger/menu icon in the Header component so that clicking it on the Home Screen (and all pages) correctly toggles open the mobile navigation menu. The mobile menu state must update on click, the menu drawer/panel must become visible, and all navigation links within the menu must be accessible and functional.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-layout-alignment-issues-on-the-productdetailpage-product-visualization-detail-page-ensure-all-sections-product-image-gallery-product-title-price-sku-stock-status-quantity-selector-add-to-cart-wishlist-buttons-product-description-specs-tabs-and-related-products-grid-are-correctly-aligned-properly-spaced-and-display-without-overflow-misalignment-or-broken-layout-on-mobile-320px-tablet-768px-and-desktop-1280px-breakpoints",
+      "title": "Fix the layout alignment issues on the ProductDetailPage (product visualization/detail page). Ensure all sections — product image gallery, product title, price, SKU, stock status, quantity selector, Add to Cart/Wishlist buttons, product description/specs tabs, and related products grid — are correctly aligned, properly spaced, and display without overflow, misalignment, or broken layout on mobile (320px+), tablet (768px+), and desktop (1280px+) breakpoints.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-product-review-and-rating-feature-to-the-productdetailpage-each-product-detail-page-must-include-1-a-star-rating-selector-1-5-stars-allowing-customers-to-submit-a-rating-2-a-text-review-form-with-a-name-field-and-review-body-3-a-submit-review-button-that-saves-the-review-stored-in-backend-or-local-state-4-a-reviews-list-displayed-below-the-product-description-specs-tabs-showing-each-review-s-author-name-star-rating-date-and-review-text-and-5-an-average-star-rating-displayed-on-the-productcard-component-alongside-the-existing-rating-display",
+      "title": "Add a product review and rating feature to the ProductDetailPage. Each product detail page must include: (1) a star rating selector (1–5 stars) allowing customers to submit a rating, (2) a text review form with a name field and review body, (3) a 'Submit Review' button that saves the review (stored in backend or local state), (4) a reviews list displayed below the product description/specs tabs showing each review's author name, star rating, date, and review text, and (5) an average star rating displayed on the ProductCard component alongside the existing rating display.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-existing-bonitara-logo-used-in-the-header-component-and-any-other-locations-across-the-site-footer-brand-mark-any-page-headers-with-the-user-s-final-uploaded-logo-image-bonitara-logo-final-png-the-logo-must-be-stored-as-a-static-asset-at-frontend-public-assets-generated-bonitara-logo-final-png-and-rendered-using-an-img-tag-referencing-that-path-remove-or-replace-any-previously-generated-logo-asset-references",
+      "title": "Replace the existing BONITARA logo used in the Header component and any other locations across the site (footer brand mark, any page headers) with the user's final uploaded logo image (bonitara-logo-final.png). The logo must be stored as a static asset at frontend/public/assets/generated/bonitara-logo-final.png and rendered using an <img> tag referencing that path. Remove or replace any previously generated logo asset references.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-contact-us-link-in-the-footer-component-so-that-clicking-it-correctly-navigates-to-the-contact-us-page-and-triggers-a-scroll-to-the-top-of-the-page-position-0-0-currently-clicking-contact-us-in-the-footer-menu-does-not-scroll-to-the-top-the-fix-must-ensure-the-scroll-to-top-behavior-fires-on-this-navigation-action-consistent-with-the-global-scroll-to-top-behavior-already-implemented-for-other-links",
+      "title": "Fix the 'Contact Us' link in the Footer component so that clicking it correctly navigates to the Contact Us page AND triggers a scroll to the top of the page (position 0, 0). Currently clicking 'Contact Us' in the footer menu does not scroll to the top. The fix must ensure the scroll-to-top behavior fires on this navigation action, consistent with the global scroll-to-top behavior already implemented for other links.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-admin-dashboard-login-so-that-entering-the-hardcoded-credentials-username-admin-password-bonitara-2024-successfully-authenticates-and-grants-access-to-the-dashboard-tabs-ensure-the-motoko-admincheck-function-correctly-validates-these-credentials-and-the-admindashboardpage-login-form-correctly-calls-that-function-handles-the-response-and-transitions-to-the-authenticated-dashboard-view-on-success-display-the-credentials-visibly-on-the-login-screen-for-development-reference",
+      "title": "Fix the Admin Dashboard login so that entering the hardcoded credentials (username: 'admin', password: 'Bonitara@2024') successfully authenticates and grants access to the dashboard tabs. Ensure the Motoko adminCheck function correctly validates these credentials, and the AdminDashboardPage login form correctly calls that function, handles the response, and transitions to the authenticated dashboard view on success. Display the credentials visibly on the login screen for development reference.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-home-page-layout-alignment-issues-restore-all-homepage-sections-hero-banner-featured-categories-best-sellers-product-grid-why-us-feature-cards-testimonial-carousel-and-newsletter-section-to-be-correctly-aligned-properly-spaced-and-free-of-overflow-or-broken-grids-on-mobile-320px-tablet-768px-and-desktop-1280px-breakpoints",
+      "title": "Fix the home page layout alignment issues. Restore all HomePage sections — hero banner, featured categories, best sellers product grid, why-us feature cards, testimonial carousel, and newsletter section — to be correctly aligned, properly spaced, and free of overflow or broken grids on mobile (320px+), tablet (768px+), and desktop (1280px+) breakpoints.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-all-footer-menu-and-navigation-link-text-colors-in-the-footer-component-so-they-are-clearly-legible-as-white-ivory-against-the-dark-footer-background-all-footer-links-quick-links-category-links-policy-links-contact-links-and-social-icons-must-use-white-or-ivory-color-e-g-text-white-text-ivory-or-text-gold-300-as-defined-in-the-tailwind-config-and-must-never-appear-black-or-invisible-hover-states-must-also-remain-visible-and-consistent-with-the-luxury-theme",
+      "title": "Fix all footer menu and navigation link text colors in the Footer component so they are clearly legible as white/ivory against the dark footer background. All footer links — Quick Links, Category Links, Policy Links, Contact links, and social icons — must use white or ivory color (e.g., text-white, text-ivory, or text-gold-300 as defined in the Tailwind config) and must never appear black or invisible. Hover states must also remain visible and consistent with the luxury theme.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-login-and-registration-flow-so-that-users-can-successfully-register-new-accounts-and-log-in-using-existing-credentials-the-authentication-state-must-persist-correctly-and-authenticated-users-must-be-redirected-to-their-profile-account-page-after-successful-login-unauthenticated-users-must-be-redirected-to-the-login-prompt-when-accessing-protected-pages-profile-orderhistory",
+      "title": "Fix the login and registration flow so that users can successfully register new accounts and log in using existing credentials. The authentication state must persist correctly, and authenticated users must be redirected to their profile/account page after successful login. Unauthenticated users must be redirected to the login prompt when accessing protected pages (Profile, OrderHistory).",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-all-policy-page-routes-so-that-the-faq-shipping-policy-terms-conditions-and-return-refund-policy-pages-navigate-to-and-render-their-correct-content-pages-currently-some-policy-links-open-the-home-page-instead-of-the-intended-policy-page-audit-the-hash-based-routing-in-app-tsx-and-ensure-each-policy-route-maps-to-its-correct-page-component-faqpage-shippingpolicypage-termspage-returnpolicypage",
+      "title": "Fix all policy page routes so that the FAQ, Shipping Policy, Terms & Conditions, and Return & Refund Policy pages navigate to and render their correct content pages. Currently some policy links open the Home page instead of the intended policy page. Audit the hash-based routing in App.tsx and ensure each policy route maps to its correct page component (FAQPage, ShippingPolicyPage, TermsPage, ReturnPolicyPage).",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-categories-navigation-column-entirely-from-the-footer-component-the-footer-currently-contains-a-categories-section-with-links-to-the-four-product-categories-soap-making-candle-making-resin-art-fragrance-this-entire-column-must-be-removed-the-remaining-footer-columns-quick-links-policies-contact-must-reflow-gracefully-to-fill-the-layout-without-leaving-empty-space",
+      "title": "Remove the Categories navigation column entirely from the Footer component. The footer currently contains a 'Categories' section with links to the four product categories (Soap Making, Candle Making, Resin Art, Fragrance). This entire column must be removed. The remaining footer columns (Quick Links, Policies, Contact) must reflow gracefully to fill the layout without leaving empty space.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-product-review-submission-on-productdetailpage-so-that-clicking-submit-review-correctly-saves-the-review-to-the-backend-and-immediately-displays-it-in-the-reviews-list-the-reviewform-component-must-invoke-the-usesubmitreview-mutation-hook-successfully-the-backend-submitreview-motoko-function-must-accept-and-persist-the-review-and-the-reviewslist-component-must-reflect-the-newly-submitted-review-after-cache-invalidation",
+      "title": "Fix the product review submission on ProductDetailPage so that clicking 'Submit Review' correctly saves the review to the backend and immediately displays it in the reviews list. The ReviewForm component must invoke the useSubmitReview mutation hook successfully, the backend submitReview Motoko function must accept and persist the review, and the ReviewsList component must reflect the newly submitted review after cache invalidation.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-the-homepage-component-change-the-text-icon-color-of-the-following-elements-to-white-text-white-or-fill-white-1-the-svg-icons-inside-the-feature-why-us-cards-in-section-2-elements-1-2-3-the-three-svg-icons-in-the-first-three-feature-card-icon-containers-2-the-icon-container-or-icon-element-of-the-fourth-feature-card-in-section-2-element-4-3-the-h2-heading-of-section-3-best-sellers-or-equivalent-section-title-element-5-4-the-h2-heading-and-its-inner-span-in-section-5-element-6-and-7-5-the-h2-heading-of-section-7-element-8-and-6-the-p-paragraph-text-in-section-6-element-9-apply-text-white-and-fill-white-or-stroke-white-where-applicable-for-svg-elements-to-each-of-these-targeted-elements",
+      "title": "In the HomePage component, change the text/icon color of the following elements to white (`text-white` or `fill-white`): (1) the SVG icons inside the feature/why-us cards in section 2 (elements 1, 2, 3 — the three SVG icons in the first three feature card icon containers), (2) the icon container or icon element of the fourth feature card in section 2 (element 4), (3) the `<h2>` heading of section 3 (Best Sellers or equivalent section title, element 5), (4) the `<h2>` heading and its inner `<span>` in section 5 (element 6 and 7), (5) the `<h2>` heading of section 7 (element 8), and (6) the `<p>` paragraph text in section 6 (element 9). Apply `text-white` (and `fill-white` or `stroke-white` where applicable for SVG elements) to each of these targeted elements.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-manual-email-password-login-and-registration-system-to-the-site-the-login-page-must-present-two-options-1-manual-login-with-email-and-password-fields-and-a-login-button-and-2-internet-identity-existing-the-registration-page-must-present-two-options-1-manual-registration-with-name-email-password-and-confirm-password-fields-and-a-register-button-and-2-internet-identity-both-pages-must-be-clearly-laid-out-so-regular-users-and-the-admin-can-easily-understand-and-use-them-the-admin-can-use-username-admin-and-password-bonitara-2024-via-the-manual-login-path-store-registered-user-credentials-in-the-motoko-backend-and-validate-login-against-stored-records",
+      "title": "Add a manual email/password login and registration system to the site. The login page must present two options: (1) Manual login with email and password fields and a 'Login' button, and (2) Internet Identity (existing). The registration page must present two options: (1) Manual registration with name, email, password, and confirm password fields and a 'Register' button, and (2) Internet Identity. Both pages must be clearly laid out so regular users and the admin can easily understand and use them. The admin can use username 'admin' and password 'Bonitara@2024' via the manual login path. Store registered user credentials in the Motoko backend and validate login against stored records.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-perform-a-comprehensive-mobile-and-responsive-layout-pass-across-all-pages-of-the-bonitara-site-every-page-home-category-productdetail-cart-checkout-profile-orderhistory-blog-wholesale-faq-shippingpolicy-terms-returnpolicy-contactus-and-admindashboard-must-render-correctly-and-without-overflow-broken-grids-or-misaligned-elements-on-mobile-320px-tablet-768px-and-desktop-1280px-breakpoints-all-interactive-elements-buttons-cards-modals-dropdowns-forms-navigation-menus-must-have-touch-friendly-tap-targets-minimum-44px-images-must-resize-correctly-without-distortion-font-sizes-must-scale-appropriately-across-breakpoints-the-hamburger-mobile-menu-must-open-and-close-correctly-modals-and-overlays-must-display-properly-on-small-screens",
+      "title": "Perform a comprehensive mobile and responsive layout pass across all pages of the BONITARA site. Every page — Home, Category, ProductDetail, Cart, Checkout, Profile, OrderHistory, Blog, Wholesale, FAQ, ShippingPolicy, Terms, ReturnPolicy, ContactUs, and AdminDashboard — must render correctly and without overflow, broken grids, or misaligned elements on mobile (320px+), tablet (768px+), and desktop (1280px+) breakpoints. All interactive elements (buttons, cards, modals, dropdowns, forms, navigation menus) must have touch-friendly tap targets (minimum 44px). Images must resize correctly without distortion. Font sizes must scale appropriately across breakpoints. The hamburger mobile menu must open and close correctly. Modals and overlays must display properly on small screens.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -147,6 +323,152 @@
     {
       "id": "AR-6",
       "summary": "Email-enabled features: newsletter signup, contact form, wholesale inquiry form, order confirmation emails",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Provide admin login credentials (id/password) for the admin dashboard",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Fix footer menu text color visibility issue",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Auto scroll to top when clicking a product from suggestions/related products section",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Ensure fully responsive layout and smooth animations across all pages",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Fix product detail page: clicking any product always shows 'Rose Petal Soap' instead of the actual selected product — must display the correct product based on selection",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Scroll to top on every page navigation/link click so users always see the top of the new page",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Fix mobile menu icon on Home Screen — clicking it does not open the menu",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Fix product visualization/detail page layout alignment issues",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Add product review/rating feature: star rating (1-5) on product detail page, text review form, display all reviews below description, average rating on product card",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Update site logo to the user's final provided logo across all pages",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Fix 'Contact Us' footer link not scrolling to top on click",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Fix regressions introduced in latest build: restore layout to previous working state, fix login not working, fix footer menu link color (currently black/invisible), ensure proper alignment across all pages — deliver a stable final version",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Restore the overall site layout to its last known working state. Audit every page (Home, Category, ProductDetail, Cart, Checkout, Profile, OrderHistory, Blog, Wholesale, FAQ, ShippingPolicy, Terms, ReturnPolicy, ContactUs, AdminDashboard) and fix any layout regressions introduced in the latest build version so that all sections, grids, spacing, and visual hierarchy match the intended luxury design on mobile (320px+), tablet (768px+), and desktop (1280px+).",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Fix the Admin Dashboard login so that entering the hardcoded credentials (username: 'admin', password: 'Bonitara@2024') successfully authenticates and grants access to the dashboard tabs. The backend adminCheck Motoko function must correctly validate these credentials, and the AdminDashboardPage login form must call that function, handle the response, and transition to the authenticated dashboard view on success.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Fix all footer menu and navigation link text colors in the Footer component so they are clearly legible against the dark footer background. All footer links — Quick Links, Category Links, Policy Links, Contact links, and social icons — must use the ivory or soft-gold color tokens defined in the Tailwind config (e.g., text-ivory, text-gold-300, or equivalent) and must never appear black or invisible. Hover states must also remain visible and consistent with the luxury theme.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Perform a comprehensive final-version quality pass across the entire BONITARA site: verify that all previously implemented fixes (global scroll-to-top, mobile hamburger menu, correct product routing on ProductDetailPage, ProductDetailPage layout alignment, product reviews, logo replacement, Contact Us footer link scroll fix) continue to work correctly in the current build without regressions.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "Fix login/register not working",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Fix policy pages (FAQ, Shipping Policy, Terms & Conditions, Return & Refund Policy) — some open home page instead of the correct policy page; ensure all policy page routes navigate to the correct content",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Remove the Category section/links from the footer — user does not want it displayed",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Fix review submission not working on ProductDetailPage — submitting a review must save and display it correctly",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Change/update color to white — likely a UI element that needs to be white (context: response to latest build review)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Add manual login (email/password) and registration options alongside Google sign-in on the login/register page; ensure easy access for both admin and regular users",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Full responsive/mobile-friendly pass across all pages (Home, Category, Product Detail, Cart, Checkout, Profile, Order History, Blog, Wholesale, FAQ, Shipping Policy, Terms, Return Policy, Contact Us, Admin Dashboard) — touch-friendly targets, no overflow, proper font scaling, images resize correctly, modals work on mobile; breakpoints: 320px+, 768px+, 1280px+",
       "reqIds": [],
       "status": "pending"
     }
