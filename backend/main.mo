@@ -10,8 +10,6 @@ import Iter "mo:core/Iter";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
-// Correct errors using migration functionality.
-
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -253,6 +251,10 @@ actor {
     };
   };
 
+  public type Error = {
+    #error : Text;
+  };
+
   public type Product = {
     id : Nat;
     name : Text;
@@ -265,7 +267,7 @@ actor {
     isVisible : Bool;
   };
 
-  public type ProductInput = {
+  public type AddProductInput = {
     name : Text;
     description : Text;
     price : Nat;
@@ -275,68 +277,92 @@ actor {
     imageUrl : Text;
   };
 
-  public shared ({ caller }) func addProduct(productInput : ProductInput) : async Nat {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can add products");
-    };
-
-    let newProductId = productsMap.size() + 1;
-
-    let newProduct : Product = {
-      id = newProductId;
-      name = productInput.name;
-      description = productInput.description;
-      price = productInput.price;
-      sku = productInput.sku;
-      stock = productInput.stock;
-      category = productInput.category;
-      imageUrl = productInput.imageUrl;
-      isVisible = true;
-    };
-
-    productsMap.add(newProductId, newProduct);
-    newProductId;
+  public type UpdateProductInput = {
+    name : Text;
+    description : Text;
+    price : Nat;
+    sku : Text;
+    stock : Nat;
+    category : Text;
+    imageUrl : Text;
   };
 
-  public shared ({ caller }) func updateProduct(productId : Nat, updatedInput : ProductInput) : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can update products");
-    };
-
-    switch (productsMap.get(productId)) {
-      case (null) { false };
-      case (?existingProduct) {
-        let updatedProduct : Product = {
-          existingProduct with
-          name = updatedInput.name;
-          description = updatedInput.description;
-          price = updatedInput.price;
-          sku = updatedInput.sku;
-          stock = updatedInput.stock;
-          category = updatedInput.category;
-          imageUrl = updatedInput.imageUrl;
+  public shared ({ caller }) func addProduct(productInput : AddProductInput) : async { #ok : Nat; #err : Error } {
+    switch (AccessControl.getUserRole(accessControlState, caller)) {
+      case (#admin) {
+        let newProductId = productsMap.size() + 1;
+        let newProduct : Product = {
+          id = newProductId;
+          name = productInput.name;
+          description = productInput.description;
+          price = productInput.price;
+          sku = productInput.sku;
+          stock = productInput.stock;
+          category = productInput.category;
+          imageUrl = productInput.imageUrl;
+          isVisible = true;
         };
-        productsMap.add(productId, updatedProduct);
-        true;
+
+        productsMap.add(newProductId, newProduct);
+        #ok(newProductId);
       };
+      case (_) { #err(#error("Unauthorized: Only admins can add products")) };
     };
   };
 
-  public shared ({ caller }) func deleteProduct(productId : Nat) : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can delete products");
-    };
-
-    switch (productsMap.get(productId)) {
-      case (null) { false };
-      case (?existingProduct) {
-        let updatedProduct : Product = {
-          existingProduct with
-          isVisible = false;
+  public shared ({ caller }) func updateProduct(productId : Nat, updateProductInput : UpdateProductInput) : async { #ok : Product; #err : Error } {
+    switch (AccessControl.getUserRole(accessControlState, caller)) {
+      case (#admin) {
+        switch (productsMap.get(productId)) {
+          case (?product) {
+            let updatedProduct = { product with
+              name = updateProductInput.name;
+              description = updateProductInput.description;
+              price = updateProductInput.price;
+              sku = updateProductInput.sku;
+              stock = updateProductInput.stock;
+              category = updateProductInput.category;
+              imageUrl = updateProductInput.imageUrl;
+            };
+            productsMap.add(productId, updatedProduct);
+            #ok(updatedProduct);
+          };
+          case (null) { #err(#error("Product not found")) };
         };
-        productsMap.add(productId, updatedProduct);
-        true;
       };
+      case (_) { #err(#error("Unauthorized: Only admins can update products")) };
+    };
+  };
+
+  public shared ({ caller }) func updateProductVisibility(productId : Nat, visibility : Bool) : async { #ok : Product; #err : Error } {
+    switch (AccessControl.getUserRole(accessControlState, caller)) {
+      case (#admin) {
+        switch (productsMap.get(productId)) {
+          case (?product) {
+            let updatedProduct = { product with isVisible = visibility };
+            productsMap.add(productId, updatedProduct);
+            #ok(updatedProduct);
+          };
+          case (null) { #err(#error("Product not found")) };
+        };
+      };
+      case (_) { #err(#error("Unauthorized: Only admins can update product visibility")) };
+    };
+  };
+
+  public shared ({ caller }) func deleteProduct(productId : Nat) : async { #ok : Nat; #err : Error } {
+    switch (AccessControl.getUserRole(accessControlState, caller)) {
+      case (#admin) {
+        switch (productsMap.get(productId)) {
+          case (?product) {
+            let updatedProduct = { product with isVisible = false };
+            productsMap.add(productId, updatedProduct);
+            #ok(productId);
+          };
+          case (null) { #err(#error("Product not found")) };
+        };
+      };
+      case (_) { #err(#error("Unauthorized: Only admins can delete products")) };
     };
   };
 
@@ -359,5 +385,9 @@ actor {
     ).map(
       func((_, p)) { p }
     );
+  };
+
+  public query ({ caller }) func getProductById(productId : Nat) : async ?Product {
+    productsMap.get(productId);
   };
 };

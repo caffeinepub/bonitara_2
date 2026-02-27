@@ -10,9 +10,7 @@ import {
   ChevronDown,
   User,
   LogOut,
-  Package,
   ClipboardList,
-  Shield,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -173,14 +171,6 @@ export default function Header() {
                         <ClipboardList className="w-4 h-4" />
                         My Orders
                       </a>
-                      <a
-                        href="#/admin"
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-body text-foreground hover:bg-muted transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Shield className="w-4 h-4" />
-                        Admin
-                      </a>
                       <div className="border-t border-border my-1" />
                       <button
                         onClick={handleAuth}
@@ -191,24 +181,14 @@ export default function Header() {
                       </button>
                     </>
                   ) : (
-                    <>
-                      <button
-                        onClick={() => { handleAuth(); setUserMenuOpen(false); }}
-                        disabled={isLoggingIn}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm font-body text-foreground hover:bg-muted transition-colors disabled:opacity-50"
-                      >
-                        <User className="w-4 h-4" />
-                        {isLoggingIn ? 'Signing in...' : 'Sign In'}
-                      </button>
-                      <a
-                        href="#/admin"
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-body text-foreground hover:bg-muted transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Shield className="w-4 h-4" />
-                        Admin
-                      </a>
-                    </>
+                    <button
+                      onClick={() => { handleAuth(); setUserMenuOpen(false); }}
+                      disabled={isLoggingIn}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm font-body text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                    >
+                      <User className="w-4 h-4" />
+                      {isLoggingIn ? 'Signing in...' : 'Sign In'}
+                    </button>
                   )}
                 </div>
               )}
@@ -282,6 +262,15 @@ export default function Header() {
                 <Heart className="w-4 h-4" />
                 Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
               </a>
+              <a
+                href="#/cart"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-body text-foreground hover:bg-muted rounded-sm transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Cart {itemCount > 0 && `(${itemCount})`}
+              </a>
+
               {isAuthenticated ? (
                 <>
                   <a
@@ -300,14 +289,6 @@ export default function Header() {
                     <ClipboardList className="w-4 h-4" />
                     My Orders
                   </a>
-                  <a
-                    href="#/admin"
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-body text-foreground hover:bg-muted rounded-sm transition-colors"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <Shield className="w-4 h-4" />
-                    Admin
-                  </a>
                   <button
                     onClick={() => { handleAuth(); setMobileOpen(false); }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm font-body text-foreground hover:bg-muted rounded-sm transition-colors"
@@ -317,24 +298,14 @@ export default function Header() {
                   </button>
                 </>
               ) : (
-                <>
-                  <button
-                    onClick={() => { handleAuth(); setMobileOpen(false); }}
-                    disabled={isLoggingIn}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm font-body text-foreground hover:bg-muted rounded-sm transition-colors disabled:opacity-50"
-                  >
-                    <User className="w-4 h-4" />
-                    {isLoggingIn ? 'Signing in...' : 'Sign In'}
-                  </button>
-                  <a
-                    href="#/admin"
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-body text-foreground hover:bg-muted rounded-sm transition-colors"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <Shield className="w-4 h-4" />
-                    Admin
-                  </a>
-                </>
+                <button
+                  onClick={() => { handleAuth(); setMobileOpen(false); }}
+                  disabled={isLoggingIn}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm font-body text-foreground hover:bg-muted rounded-sm transition-colors disabled:opacity-50"
+                >
+                  <User className="w-4 h-4" />
+                  {isLoggingIn ? 'Signing in...' : 'Sign In'}
+                </button>
               )}
             </div>
           </nav>

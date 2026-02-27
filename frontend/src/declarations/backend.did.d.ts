@@ -10,6 +10,16 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface AddProductInput {
+  'sku' : string,
+  'name' : string,
+  'description' : string,
+  'stock' : bigint,
+  'imageUrl' : string,
+  'category' : string,
+  'price' : bigint,
+}
+export type Error = { 'error' : string };
 export interface Product {
   'id' : bigint,
   'sku' : string,
@@ -22,15 +32,6 @@ export interface Product {
   'price' : bigint,
 }
 export type ProductId = bigint;
-export interface ProductInput {
-  'sku' : string,
-  'name' : string,
-  'description' : string,
-  'stock' : bigint,
-  'imageUrl' : string,
-  'category' : string,
-  'price' : bigint,
-}
 export interface ProductReviews {
   'reviews' : Array<Review>,
   'averageRating' : [] | [Rating],
@@ -57,17 +58,34 @@ export interface ReviewInput {
   'rating' : Rating,
 }
 export type Time = bigint;
+export interface UpdateProductInput {
+  'sku' : string,
+  'name' : string,
+  'description' : string,
+  'stock' : bigint,
+  'imageUrl' : string,
+  'category' : string,
+  'price' : bigint,
+}
 export interface UserProfile { 'name' : string, 'email' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addProduct' : ActorMethod<[ProductInput], bigint>,
+  'addProduct' : ActorMethod<
+    [AddProductInput],
+    { 'ok' : bigint } |
+      { 'err' : Error }
+  >,
   'adminCheck' : ActorMethod<[string, string], boolean>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'assignUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'deleteProduct' : ActorMethod<[bigint], boolean>,
+  'deleteProduct' : ActorMethod<
+    [bigint],
+    { 'ok' : bigint } |
+      { 'err' : Error }
+  >,
   'getAllProductAverageRatings' : ActorMethod<
     [],
     Array<[ProductId, [] | [Rating]]>
@@ -76,6 +94,7 @@ export interface _SERVICE {
   'getAllProductsAdmin' : ActorMethod<[], Array<Product>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getProductById' : ActorMethod<[bigint], [] | [Product]>,
   'getProductRatingSummary' : ActorMethod<[ProductId], [] | [ProductReviews]>,
   'getProductReviewCount' : ActorMethod<[ProductId], bigint>,
   'getProductsByCategory' : ActorMethod<[string], Array<Product>>,
@@ -87,7 +106,16 @@ export interface _SERVICE {
   'registerUser' : ActorMethod<[RegistrationInput], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'submitReview' : ActorMethod<[ProductId, ReviewInput], undefined>,
-  'updateProduct' : ActorMethod<[bigint, ProductInput], boolean>,
+  'updateProduct' : ActorMethod<
+    [bigint, UpdateProductInput],
+    { 'ok' : Product } |
+      { 'err' : Error }
+  >,
+  'updateProductVisibility' : ActorMethod<
+    [bigint, boolean],
+    { 'ok' : Product } |
+      { 'err' : Error }
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

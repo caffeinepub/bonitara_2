@@ -1,24 +1,70 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-27T02:59:42.430Z",
+  "generatedAt": "2026-02-27T03:28:52.721Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 5,
+    "implemented": 5,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the 'Add New Product' modal in AdminDashboardPage.tsx so that typing in any input field (Name, SKU, Description, Price, Stock, Image URL) does not cause the field to lose focus or deselect. The root cause is likely that the form state update on each keystroke triggers a re-render that unmounts and remounts the input, or that the modal/overlay component re-renders and steals focus. Ensure all controlled inputs use stable onChange handlers (e.g., useCallback or defined outside render) and that the modal's open/close state does not re-initialize form state on every keystroke. All form fields must remain focused and accept continuous keyboard input without deselection.",
+        "summary": "Remove the admin panel link from the main navigation menu (Header.tsx) so regular users cannot see or navigate to the admin panel from the header.",
         "status": "implemented",
         "plannedFiles": [
+          "frontend/src/components/Header.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/Header.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Create a dedicated admin login page at the route `/admin/login` with a manual username/password form. Hardcode the credentials as username: `admin`, password: `admin123`. On successful login, store an admin session flag (e.g., in localStorage or sessionStorage) and redirect to `/admin`. On failed login, display an error message.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/AdminLoginPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/AdminLoginPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Protect the admin dashboard route (`/admin`) with an admin authentication guard. If the admin session flag is not present, redirect the user to `/admin/login` instead of rendering the admin dashboard. Provide a logout button on the admin dashboard that clears the session flag and redirects to `/admin/login`.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/AdminProtectedRoute.tsx",
           "frontend/src/pages/AdminDashboardPage.tsx"
         ],
         "matchedFiles": [
+          "frontend/src/components/AdminProtectedRoute.tsx",
           "frontend/src/pages/AdminDashboardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Update the main site Sign In page (LoginPage.tsx) to include both a sign-in and a sign-up option using Internet Identity. The page should clearly present Internet Identity login as the authentication method for regular users, with a visible option to register/sign up for new users on the same page.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/LoginPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/LoginPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Update the hash-based router in App.tsx to include routes for `/admin/login` (renders the new AdminLoginPage) and ensure `/admin` is guarded by the admin session check, rendering AdminDashboardPage only when authenticated as admin.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/App.tsx"
         ]
       }
     ]
@@ -28,7 +74,12 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
+    "frontend/src/components/AdminProtectedRoute.tsx",
+    "frontend/src/components/Header.tsx",
     "frontend/src/pages/AdminDashboardPage.tsx",
+    "frontend/src/pages/AdminLoginPage.tsx",
+    "frontend/src/pages/LoginPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

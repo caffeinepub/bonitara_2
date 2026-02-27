@@ -8,7 +8,7 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const ProductInput = IDL.Record({
+export const AddProductInput = IDL.Record({
   'sku' : IDL.Text,
   'name' : IDL.Text,
   'description' : IDL.Text,
@@ -17,6 +17,7 @@ export const ProductInput = IDL.Record({
   'category' : IDL.Text,
   'price' : IDL.Nat,
 });
+export const Error = IDL.Variant({ 'error' : IDL.Text });
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -64,14 +65,31 @@ export const ReviewInput = IDL.Record({
   'author' : IDL.Text,
   'rating' : Rating,
 });
+export const UpdateProductInput = IDL.Record({
+  'sku' : IDL.Text,
+  'name' : IDL.Text,
+  'description' : IDL.Text,
+  'stock' : IDL.Nat,
+  'imageUrl' : IDL.Text,
+  'category' : IDL.Text,
+  'price' : IDL.Nat,
+});
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addProduct' : IDL.Func([ProductInput], [IDL.Nat], []),
+  'addProduct' : IDL.Func(
+      [AddProductInput],
+      [IDL.Variant({ 'ok' : IDL.Nat, 'err' : Error })],
+      [],
+    ),
   'adminCheck' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], ['query']),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'assignUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'deleteProduct' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+  'deleteProduct' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Variant({ 'ok' : IDL.Nat, 'err' : Error })],
+      [],
+    ),
   'getAllProductAverageRatings' : IDL.Func(
       [],
       [IDL.Vec(IDL.Tuple(ProductId, IDL.Opt(Rating)))],
@@ -81,6 +99,7 @@ export const idlService = IDL.Service({
   'getAllProductsAdmin' : IDL.Func([], [IDL.Vec(Product)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getProductById' : IDL.Func([IDL.Nat], [IDL.Opt(Product)], ['query']),
   'getProductRatingSummary' : IDL.Func(
       [ProductId],
       [IDL.Opt(ProductReviews)],
@@ -100,13 +119,22 @@ export const idlService = IDL.Service({
   'registerUser' : IDL.Func([RegistrationInput], [IDL.Bool], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'submitReview' : IDL.Func([ProductId, ReviewInput], [], []),
-  'updateProduct' : IDL.Func([IDL.Nat, ProductInput], [IDL.Bool], []),
+  'updateProduct' : IDL.Func(
+      [IDL.Nat, UpdateProductInput],
+      [IDL.Variant({ 'ok' : Product, 'err' : Error })],
+      [],
+    ),
+  'updateProductVisibility' : IDL.Func(
+      [IDL.Nat, IDL.Bool],
+      [IDL.Variant({ 'ok' : Product, 'err' : Error })],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
-  const ProductInput = IDL.Record({
+  const AddProductInput = IDL.Record({
     'sku' : IDL.Text,
     'name' : IDL.Text,
     'description' : IDL.Text,
@@ -115,6 +143,7 @@ export const idlFactory = ({ IDL }) => {
     'category' : IDL.Text,
     'price' : IDL.Nat,
   });
+  const Error = IDL.Variant({ 'error' : IDL.Text });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -159,14 +188,31 @@ export const idlFactory = ({ IDL }) => {
     'author' : IDL.Text,
     'rating' : Rating,
   });
+  const UpdateProductInput = IDL.Record({
+    'sku' : IDL.Text,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'stock' : IDL.Nat,
+    'imageUrl' : IDL.Text,
+    'category' : IDL.Text,
+    'price' : IDL.Nat,
+  });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addProduct' : IDL.Func([ProductInput], [IDL.Nat], []),
+    'addProduct' : IDL.Func(
+        [AddProductInput],
+        [IDL.Variant({ 'ok' : IDL.Nat, 'err' : Error })],
+        [],
+      ),
     'adminCheck' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], ['query']),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'assignUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'deleteProduct' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'deleteProduct' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Variant({ 'ok' : IDL.Nat, 'err' : Error })],
+        [],
+      ),
     'getAllProductAverageRatings' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(ProductId, IDL.Opt(Rating)))],
@@ -176,6 +222,7 @@ export const idlFactory = ({ IDL }) => {
     'getAllProductsAdmin' : IDL.Func([], [IDL.Vec(Product)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getProductById' : IDL.Func([IDL.Nat], [IDL.Opt(Product)], ['query']),
     'getProductRatingSummary' : IDL.Func(
         [ProductId],
         [IDL.Opt(ProductReviews)],
@@ -199,7 +246,16 @@ export const idlFactory = ({ IDL }) => {
     'registerUser' : IDL.Func([RegistrationInput], [IDL.Bool], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'submitReview' : IDL.Func([ProductId, ReviewInput], [], []),
-    'updateProduct' : IDL.Func([IDL.Nat, ProductInput], [IDL.Bool], []),
+    'updateProduct' : IDL.Func(
+        [IDL.Nat, UpdateProductInput],
+        [IDL.Variant({ 'ok' : Product, 'err' : Error })],
+        [],
+      ),
+    'updateProductVisibility' : IDL.Func(
+        [IDL.Nat, IDL.Bool],
+        [IDL.Variant({ 'ok' : Product, 'err' : Error })],
+        [],
+      ),
   });
 };
 

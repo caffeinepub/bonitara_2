@@ -69,9 +69,12 @@ import BlogPostPage from './pages/BlogPostPage';
 import ProfilePage from './pages/ProfilePage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminLoginPage from './pages/AdminLoginPage';
 import WishlistPage from './pages/WishlistPage';
+import LoginPage from './pages/LoginPage';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
 
 // Simple hash-based router
 function useHashRouter() {
@@ -97,6 +100,11 @@ function parseHash(hash: string): { path: string; params: Record<string, string>
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Simple pass-through; actual auth guard is inside the page components
   return <>{children}</>;
+}
+
+// Admin routes render without the main Header/Footer
+function isAdminRoute(path: string): boolean {
+  return path === '/admin' || path === '/admin/login';
 }
 
 export default function App() {
@@ -169,6 +177,14 @@ export default function App() {
   const { path } = parseHash(hash);
 
   const renderPage = () => {
+    // Admin routes — no main header/footer
+    if (path === '/admin/login') return <AdminLoginPage />;
+    if (path === '/admin') return (
+      <AdminProtectedRoute>
+        <AdminDashboardPage />
+      </AdminProtectedRoute>
+    );
+
     // Exact matches
     if (path === '/' || path === '') return <HomePage />;
     if (path === '/cart') return <CartPage />;
@@ -183,9 +199,8 @@ export default function App() {
     if (path === '/wishlist') return <WishlistPage />;
     if (path === '/profile') return <ProtectedRoute><ProfilePage /></ProtectedRoute>;
     if (path === '/orders') return <ProtectedRoute><OrderHistoryPage /></ProtectedRoute>;
-    if (path === '/admin') return <AdminDashboardPage />;
-    if (path === '/login') return <HomePage />;
-    if (path === '/register') return <HomePage />;
+    if (path === '/login') return <LoginPage />;
+    if (path === '/register') return <LoginPage />;
 
     // Dynamic routes
     if (path.startsWith('/category/')) {
@@ -204,6 +219,31 @@ export default function App() {
     // 404 fallback
     return <HomePage />;
   };
+
+  // Admin routes don't use the main layout
+  if (isAdminRoute(path)) {
+    return (
+      <CartContext.Provider value={{
+        items: cartItems,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        subtotal,
+        itemCount,
+      }}>
+        <WishlistContext.Provider value={{
+          wishlistItems,
+          toggleWishlist,
+          isWishlisted,
+          addToWishlist,
+          removeFromWishlist,
+        }}>
+          {renderPage()}
+        </WishlistContext.Provider>
+      </CartContext.Provider>
+    );
+  }
 
   return (
     <CartContext.Provider value={{

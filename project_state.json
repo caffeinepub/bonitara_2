@@ -1,24 +1,77 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [
-    "Keyboard input causes deselection in 'Add New Product' panel — typing a word deselects the field, making keyboard input non-functional"
+  "summary": "E-commerce/marketplace project with admin panel security. Admin panel protected at /admin route with hardcoded credentials (admin/admin123). Regular users use Internet Identity for sign-in. Admin link removed from main navigation.",
+  "architectural_notes": [
+    "Admin panel secured at /admin route with hardcoded credentials (admin/admin123), not accessible from main navigation",
+    "Regular user authentication uses Internet Identity (passkeys/Google/Apple)"
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-fix-the-add-new-product-modal-in-admindashboardpage-tsx-so-that-typing-in-any-input-field-name-sku-description-price-stock-image-url-does-not-cause-the-field-to-lose-focus-or-deselect-the-root-cause-is-likely-that-the-form-state-update-on-each-keystroke-triggers-a-re-render-that-unmounts-and-remounts-the-input-or-that-the-modal-overlay-component-re-renders-and-steals-focus-ensure-all-controlled-inputs-use-stable-onchange-handlers-e-g-usecallback-or-defined-outside-render-and-that-the-modal-s-open-close-state-does-not-re-initialize-form-state-on-every-keystroke-all-form-fields-must-remain-focused-and-accept-continuous-keyboard-input-without-deselection",
-      "title": "Fix the 'Add New Product' modal in AdminDashboardPage.tsx so that typing in any input field (Name, SKU, Description, Price, Stock, Image URL) does not cause the field to lose focus or deselect. The root cause is likely that the form state update on each keystroke triggers a re-render that unmounts and remounts the input, or that the modal/overlay component re-renders and steals focus. Ensure all controlled inputs use stable onChange handlers (e.g., useCallback or defined outside render) and that the modal's open/close state does not re-initialize form state on every keystroke. All form fields must remain focused and accept continuous keyboard input without deselection.",
+      "id": "feature-remove-the-admin-panel-link-from-the-main-navigation-menu-header-tsx-so-regular-users-cannot-see-or-navigate-to-the-admin-panel-from-the-header",
+      "title": "Remove the admin panel link from the main navigation menu (Header.tsx) so regular users cannot see or navigate to the admin panel from the header.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-create-a-dedicated-admin-login-page-at-the-route-admin-login-with-a-manual-username-password-form-hardcode-the-credentials-as-username-admin-password-admin123-on-successful-login-store-an-admin-session-flag-e-g-in-localstorage-or-sessionstorage-and-redirect-to-admin-on-failed-login-display-an-error-message",
+      "title": "Create a dedicated admin login page at the route `/admin/login` with a manual username/password form. Hardcode the credentials as username: `admin`, password: `admin123`. On successful login, store an admin session flag (e.g., in localStorage or sessionStorage) and redirect to `/admin`. On failed login, display an error message.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-protect-the-admin-dashboard-route-admin-with-an-admin-authentication-guard-if-the-admin-session-flag-is-not-present-redirect-the-user-to-admin-login-instead-of-rendering-the-admin-dashboard-provide-a-logout-button-on-the-admin-dashboard-that-clears-the-session-flag-and-redirects-to-admin-login",
+      "title": "Protect the admin dashboard route (`/admin`) with an admin authentication guard. If the admin session flag is not present, redirect the user to `/admin/login` instead of rendering the admin dashboard. Provide a logout button on the admin dashboard that clears the session flag and redirects to `/admin/login`.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-main-site-sign-in-page-loginpage-tsx-to-include-both-a-sign-in-and-a-sign-up-option-using-internet-identity-the-page-should-clearly-present-internet-identity-login-as-the-authentication-method-for-regular-users-with-a-visible-option-to-register-sign-up-for-new-users-on-the-same-page",
+      "title": "Update the main site Sign In page (LoginPage.tsx) to include both a sign-in and a sign-up option using Internet Identity. The page should clearly present Internet Identity login as the authentication method for regular users, with a visible option to register/sign up for new users on the same page.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-hash-based-router-in-app-tsx-to-include-routes-for-admin-login-renders-the-new-adminloginpage-and-ensure-admin-is-guarded-by-the-admin-session-check-rendering-admindashboardpage-only-when-authenticated-as-admin",
+      "title": "Update the hash-based router in App.tsx to include routes for `/admin/login` (renders the new AdminLoginPage) and ensure `/admin` is guarded by the admin session check, rendering AdminDashboardPage only when authenticated as admin.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "BONITARA",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Remove admin link from main navigation menu",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Protect admin panel at /admin route with manual login (hardcoded admin/admin123 credentials)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Regular user sign-in via Internet Identity with sign-up option on same page",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Bonitara Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

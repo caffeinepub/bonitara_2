@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../hooks/useActor';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { Product, ProductInput } from '../backend';
+import { Product, AddProductInput } from '../backend';
 import {
   Package, ShoppingBag, MessageSquare, LayoutDashboard, LogOut,
   Plus, Search, RefreshCw, Edit2, Trash2, Eye, EyeOff, X,
@@ -11,7 +10,7 @@ import {
 // ── helpers ──────────────────────────────────────────────────────────────────
 const CATEGORIES = ['Soap Making', 'Candle Making', 'Resin Art', 'Fragrance'];
 
-const emptyForm = (): ProductInput => ({
+const emptyForm = (): AddProductInput => ({
   name: '',
   sku: '',
   description: '',
@@ -37,13 +36,13 @@ function StatCard({ label, value, icon }: { label: string; value: string | numbe
 // ── ProductForm (top-level component — MUST be outside AdminDashboardPage) ────
 interface ProductFormProps {
   title: string;
-  form: ProductInput;
+  form: AddProductInput;
   formError: string;
   isMutating: boolean;
   isEditing: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  onFormChange: (updater: (prev: ProductInput) => ProductInput) => void;
+  onFormChange: (updater: (prev: AddProductInput) => AddProductInput) => void;
 }
 
 function ProductForm({
@@ -170,7 +169,6 @@ function ProductForm({
 // ── main component ────────────────────────────────────────────────────────────
 export default function AdminDashboardPage() {
   const { actor, isFetching: actorFetching } = useActor();
-  const { clear } = useInternetIdentity();
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'inquiries'>('overview');
@@ -178,8 +176,15 @@ export default function AdminDashboardPage() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [addingProduct, setAddingProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [form, setForm] = useState<ProductInput>(emptyForm());
+  const [form, setForm] = useState<AddProductInput>(emptyForm());
   const [formError, setFormError] = useState('');
+
+  // ── admin logout ──────────────────────────────────────────────────────────
+  const handleAdminLogout = () => {
+    sessionStorage.removeItem('adminSession');
+    queryClient.clear();
+    window.location.hash = '/admin/login';
+  };
 
   // ── queries ──────────────────────────────────────────────────────────────
   const { data: products = [], isLoading, refetch } = useQuery<Product[]>({
@@ -193,9 +198,13 @@ export default function AdminDashboardPage() {
 
   // ── mutations ─────────────────────────────────────────────────────────────
   const addMutation = useMutation({
-    mutationFn: async (input: ProductInput) => {
+    mutationFn: async (input: AddProductInput) => {
       if (!actor) throw new Error('No actor');
-      return actor.addProduct(input);
+      const result = await actor.addProduct(input);
+      if (result.__kind__ === 'err') {
+        throw new Error(result.err.error ?? 'Failed to add product');
+      }
+      return result.ok;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
@@ -208,9 +217,13 @@ export default function AdminDashboardPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, input }: { id: bigint; input: ProductInput }) => {
+    mutationFn: async ({ id, input }: { id: bigint; input: AddProductInput }) => {
       if (!actor) throw new Error('No actor');
-      return actor.updateProduct(id, input);
+      const result = await actor.updateProduct(id, input);
+      if (result.__kind__ === 'err') {
+        throw new Error(result.err.error ?? 'Failed to update product');
+      }
+      return result.ok;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
@@ -225,7 +238,26 @@ export default function AdminDashboardPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: bigint) => {
       if (!actor) throw new Error('No actor');
-      return actor.deleteProduct(id);
+      const result = await actor.deleteProduct(id);
+      if (result.__kind__ === 'err') {
+        throw new Error(result.err.error ?? 'Failed to delete product');
+      }
+      return result.ok;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+
+  const visibilityMutation = useMutation({
+    mutationFn: async ({ id, visible }: { id: bigint; visible: boolean }) => {
+      if (!actor) throw new Error('No actor');
+      const result = await actor.updateProductVisibility(id, visible);
+      if (result.__kind__ === 'err') {
+        throw new Error(result.err.error ?? 'Failed to update visibility');
+      }
+      return result.ok;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
@@ -278,6 +310,7 @@ export default function AdminDashboardPage() {
       setFormError('Name, SKU, and Category are required.');
       return;
     }
+    setFormError('');
     if (editingProduct) {
       updateMutation.mutate({ id: editingProduct.id, input: form });
     } else {
@@ -298,7 +331,7 @@ export default function AdminDashboardPage() {
           <span className="font-bold text-stone-800 text-lg">Bonitara Admin</span>
         </div>
         <button
-          onClick={async () => { await clear(); queryClient.clear(); window.location.hash = '/'; }}
+          onClick={handleAdminLogout}
           className="flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900 transition-colors"
         >
           <LogOut size={16} />
@@ -412,20 +445,29 @@ export default function AdminDashboardPage() {
                     {p.imageUrl ? (
                       <img src={p.imageUrl} alt={p.name} className="w-16 h-16 object-cover rounded-lg shrink-0 bg-stone-100" />
                     ) : (
-                      <div className="w-16 h-16 bg-stone-100 rounded-lg shrink-0 flex items-center justify-center">
-                        <Package size={20} className="text-stone-400" />
+                      <div className="w-16 h-16 bg-stone-100 rounded-lg shrink-0 flex items-center justify-center text-stone-400">
+                        <Package size={24} />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="font-semibold text-stone-800 truncate">{p.name}</p>
-                          <p className="text-xs text-stone-500">{p.sku} · {p.category}</p>
+                          <p className="font-semibold text-stone-800 text-sm truncate">{p.name}</p>
+                          <p className="text-xs text-stone-500 mt-0.5">{p.sku} · {p.category}</p>
+                          <p className="text-xs text-stone-500 mt-0.5">₹{Number(p.price).toLocaleString()} · Stock: {Number(p.stock)}</p>
                         </div>
-                        <div className="flex gap-1 shrink-0">
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => visibilityMutation.mutate({ id: p.id, visible: !p.isVisible })}
+                            disabled={visibilityMutation.isPending}
+                            className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 transition-colors"
+                            title={p.isVisible ? 'Hide' : 'Show'}
+                          >
+                            {p.isVisible ? <Eye size={15} /> : <EyeOff size={15} />}
+                          </button>
                           <button
                             onClick={() => openEdit(p)}
-                            className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-700 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 transition-colors"
                             title="Edit"
                           >
                             <Edit2 size={15} />
@@ -433,22 +475,16 @@ export default function AdminDashboardPage() {
                           <button
                             onClick={() => deleteMutation.mutate(p.id)}
                             disabled={deleteMutation.isPending}
-                            className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-stone-500 hover:text-red-600 transition-colors"
                             title="Delete"
                           >
                             <Trash2 size={15} />
                           </button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 mt-1.5">
-                        <span className="text-sm font-bold text-amber-700">₹{Number(p.price)}</span>
-                        <span className="text-xs text-stone-500">Stock: {Number(p.stock)}</span>
-                        {!p.isVisible && (
-                          <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <EyeOff size={10} /> Hidden
-                          </span>
-                        )}
-                      </div>
+                      {!p.isVisible && (
+                        <span className="inline-block mt-1 text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">Hidden</span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -463,7 +499,7 @@ export default function AdminDashboardPage() {
             <h1 className="text-2xl font-bold text-stone-800">Orders</h1>
             <div className="text-center py-16 text-stone-500">
               <ShoppingBag size={40} className="mx-auto mb-3 opacity-30" />
-              <p>No orders yet.</p>
+              <p>Order management coming soon.</p>
             </div>
           </div>
         )}
@@ -474,13 +510,13 @@ export default function AdminDashboardPage() {
             <h1 className="text-2xl font-bold text-stone-800">Inquiries</h1>
             <div className="text-center py-16 text-stone-500">
               <MessageSquare size={40} className="mx-auto mb-3 opacity-30" />
-              <p>No inquiries yet.</p>
+              <p>Inquiry management coming soon.</p>
             </div>
           </div>
         )}
       </main>
 
-      {/* Product form overlay — rendered as a stable top-level component */}
+      {/* Product Form Modal */}
       {showForm && (
         <ProductForm
           title={editingProduct ? 'Edit Product' : 'Add New Product'}

@@ -1,23 +1,91 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix keyboard input deselection bug in Add New Product modal",
+  "title": "Secure Admin Panel with Separate Login & Remove Admin Nav Link",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Fix input field focus loss in Add New Product modal by stabilizing onChange handlers and preventing unnecessary re-renders",
+      "summary": "Remove the admin panel link from the main navigation menu so regular users cannot see or navigate to the admin panel from the header",
       "acceptanceCriteria": [
-        "Clicking into any input field in the 'Add New Product' modal and typing multiple characters keeps the field focused throughout.",
-        "No deselection or focus loss occurs after entering any character in Name, SKU, Description, Price, Stock, or Image URL fields.",
-        "The form state correctly reflects all typed characters without resetting or losing intermediate values.",
-        "The modal does not re-mount or flicker when typing in any field.",
-        "Submitting the form with fully typed values works correctly."
+        "No admin link or button is visible in the main navigation menu for any user",
+        "The Header.tsx component does not render any link pointing to the admin route"
       ],
       "file_operations": [
         {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Remove the admin panel navigation link from the desktop and mobile navigation menus. Ensure no links or buttons pointing to #admin or /admin remain visible in the header component for any user role."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Create a dedicated admin login page at /admin/login with hardcoded credentials (admin/admin123), storing session flag on success and showing error on failure",
+      "acceptanceCriteria": [
+        "Navigating to `/admin/login` shows a login form with username and password fields",
+        "Submitting correct credentials (admin/admin123) stores a session flag and redirects to `/admin` dashboard",
+        "Submitting incorrect credentials shows a visible error message and does not redirect",
+        "The page does not expose credentials in visible UI text"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminLoginPage.tsx",
+          "operation": "create",
+          "description": "Create a new admin login page component with a form containing username and password fields. Hardcode credential validation (username: 'admin', password: 'admin123'). On successful login, store an admin session flag in sessionStorage (key: 'adminSession', value: 'true') and redirect to #admin using window.location.hash. On failed login, display an error message below the form. Use shadcn/ui form components (Input, Button, Label) for styling consistency."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Protect the admin dashboard route with an authentication guard that checks for admin session flag and provides logout functionality",
+      "acceptanceCriteria": [
+        "Visiting `/admin` without a valid admin session redirects to `/admin/login`",
+        "Visiting `/admin` with a valid admin session renders the admin dashboard",
+        "Clicking logout on the admin dashboard clears the session and redirects to `/admin/login`",
+        "Regular users who are logged in via Internet Identity cannot access `/admin` without the admin session flag"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AdminProtectedRoute.tsx",
+          "operation": "create",
+          "description": "Create a route guard component that checks sessionStorage for the 'adminSession' flag. If not present or not equal to 'true', redirect to #admin/login using window.location.hash. If present, render children (the admin dashboard). This guard is independent of Internet Identity authentication."
+        },
+        {
           "path": "frontend/src/pages/AdminDashboardPage.tsx",
           "operation": "modify",
-          "description": "Refactor the Add New Product modal form to prevent input deselection by: (1) wrapping all onChange handlers in useCallback hooks with proper dependencies to ensure handler stability across re-renders; (2) ensuring the form state (newProduct) is not reset or re-initialized on every render cycle; (3) verifying the modal open/close state management does not cause form re-mounting; (4) ensuring controlled input value bindings use stable references; (5) checking that any Dialog/Modal component wrapper does not steal focus or trigger unnecessary re-renders when state changes. The root cause is likely unstable onChange handlers being recreated on each keystroke, causing React to unmount and remount the inputs. All form fields (Name, SKU, Description, Price, Stock, Image URL, Category) must maintain focus during continuous typing."
+          "description": "Add a logout button to the admin dashboard that clears the 'adminSession' flag from sessionStorage and redirects to #admin/login. Position the logout button prominently in the dashboard header or top-right corner. Use shadcn/ui Button component for consistency."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Update the main site Sign In page to include both sign-in and sign-up options using Internet Identity",
+      "acceptanceCriteria": [
+        "The Sign In page shows a clear 'Sign In' section using Internet Identity",
+        "The Sign In page also shows a 'Sign Up' or 'New User? Register' option that initiates Internet Identity registration",
+        "Both sign-in and sign-up flows use Internet Identity (no manual username/password for regular users)",
+        "After successful authentication, users are redirected to their profile page"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Remove the email/password authentication tab and form. Keep only the Internet Identity authentication section. Add clear messaging that explains Internet Identity is the authentication method for regular users. Include both a 'Sign In' button and a 'New User? Sign Up' button that both trigger the Internet Identity login flow (which handles both sign-in and registration). After successful authentication, redirect to #profile. Remove any references to useManualAuth hook."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Update the hash-based router to include /admin/login route and ensure /admin is guarded by admin session check",
+      "acceptanceCriteria": [
+        "The router handles the `/admin/login` hash route and renders the AdminLoginPage component",
+        "The router handles the `/admin` hash route and renders AdminDashboardPage only if admin session is active, otherwise redirects to `/admin/login`"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add a route case for 'admin/login' that renders the AdminLoginPage component. Update the existing 'admin' route case to wrap AdminDashboardPage with the AdminProtectedRoute component. Import both AdminLoginPage and AdminProtectedRoute at the top of the file. Ensure the admin routes are evaluated before other catch-all routes in the switch/case structure."
         }
       ]
     }
