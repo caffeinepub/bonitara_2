@@ -1,9 +1,12 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../hooks/useActor';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Product, ProductInput } from '../backend';
-import { Package, ShoppingBag, MessageSquare, LayoutDashboard, LogOut, Plus, Search, RefreshCw, Edit2, Trash2, Eye, EyeOff, X } from 'lucide-react';
+import {
+  Package, ShoppingBag, MessageSquare, LayoutDashboard, LogOut,
+  Plus, Search, RefreshCw, Edit2, Trash2, Eye, EyeOff, X,
+} from 'lucide-react';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 const CATEGORIES = ['Soap Making', 'Candle Making', 'Resin Art', 'Fragrance'];
@@ -18,7 +21,7 @@ const emptyForm = (): ProductInput => ({
   imageUrl: '',
 });
 
-// ── sub-components ────────────────────────────────────────────────────────────
+// ── StatCard ──────────────────────────────────────────────────────────────────
 function StatCard({ label, value, icon }: { label: string; value: string | number; icon: React.ReactNode }) {
   return (
     <div className="bg-white rounded-xl border border-stone-200 p-5 flex items-center gap-4 shadow-sm">
@@ -26,6 +29,139 @@ function StatCard({ label, value, icon }: { label: string; value: string | numbe
       <div>
         <p className="text-xs text-stone-500 uppercase tracking-wide">{label}</p>
         <p className="text-2xl font-bold text-stone-800">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── ProductForm (top-level component — MUST be outside AdminDashboardPage) ────
+interface ProductFormProps {
+  title: string;
+  form: ProductInput;
+  formError: string;
+  isMutating: boolean;
+  isEditing: boolean;
+  onClose: () => void;
+  onSubmit: () => void;
+  onFormChange: (updater: (prev: ProductInput) => ProductInput) => void;
+}
+
+function ProductForm({
+  title,
+  form,
+  formError,
+  isMutating,
+  isEditing,
+  onClose,
+  onSubmit,
+  onFormChange,
+}: ProductFormProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 pt-16">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-stone-200 p-6 my-4">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-bold text-stone-800">{title}</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-stone-100 text-stone-500">
+            <X size={20} />
+          </button>
+        </div>
+
+        {formError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {formError}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Name *</label>
+            <input
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              placeholder="Product name"
+              value={form.name}
+              onChange={e => onFormChange(f => ({ ...f, name: e.target.value }))}
+            />
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-sm font-medium text-stone-700 mb-1">SKU *</label>
+            <input
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              placeholder="SKU-001"
+              value={form.sku}
+              onChange={e => onFormChange(f => ({ ...f, sku: e.target.value }))}
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
+            <textarea
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white resize-none"
+              rows={3}
+              placeholder="Product description..."
+              value={form.description}
+              onChange={e => onFormChange(f => ({ ...f, description: e.target.value }))}
+            />
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Price (₹) *</label>
+            <input
+              type="number"
+              min={0}
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              placeholder="0"
+              value={Number(form.price)}
+              onChange={e => onFormChange(f => ({ ...f, price: BigInt(Math.max(0, parseInt(e.target.value) || 0)) }))}
+            />
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Stock *</label>
+            <input
+              type="number"
+              min={0}
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              placeholder="0"
+              value={Number(form.stock)}
+              onChange={e => onFormChange(f => ({ ...f, stock: BigInt(Math.max(0, parseInt(e.target.value) || 0)) }))}
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Category *</label>
+            <select
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              value={form.category}
+              onChange={e => onFormChange(f => ({ ...f, category: e.target.value }))}
+            >
+              <option value="">Select category</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Image URL</label>
+            <input
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              placeholder="https://..."
+              value={form.imageUrl}
+              onChange={e => onFormChange(f => ({ ...f, imageUrl: e.target.value }))}
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onSubmit}
+            disabled={isMutating}
+            className="flex-1 bg-amber-700 hover:bg-amber-800 disabled:opacity-60 text-white font-medium py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+          >
+            {isMutating && <RefreshCw size={14} className="animate-spin" />}
+            {isEditing ? 'Save Changes' : 'Add Product'}
+          </button>
+          <button
+            onClick={onClose}
+            disabled={isMutating}
+            className="flex-1 border border-stone-300 hover:bg-stone-50 text-stone-700 font-medium py-2.5 rounded-lg text-sm transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -150,115 +286,7 @@ export default function AdminDashboardPage() {
   };
 
   const isMutating = addMutation.isPending || updateMutation.isPending;
-
-  // ── product form panel ────────────────────────────────────────────────────
-  const ProductForm = ({ title }: { title: string }) => (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 pt-16">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-stone-200 p-6 my-4">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-bold text-stone-800">{title}</h2>
-          <button onClick={closeForm} className="p-1 rounded-lg hover:bg-stone-100 text-stone-500">
-            <X size={20} />
-          </button>
-        </div>
-
-        {formError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{formError}</div>
-        )}
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2 sm:col-span-1">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Name *</label>
-            <input
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              placeholder="Product name"
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-            />
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <label className="block text-sm font-medium text-stone-700 mb-1">SKU *</label>
-            <input
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              placeholder="SKU-001"
-              value={form.sku}
-              onChange={e => setForm(f => ({ ...f, sku: e.target.value }))}
-            />
-          </div>
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
-            <textarea
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white resize-none"
-              rows={3}
-              placeholder="Product description..."
-              value={form.description}
-              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-            />
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Price (₹) *</label>
-            <input
-              type="number"
-              min={0}
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              placeholder="0"
-              value={Number(form.price)}
-              onChange={e => setForm(f => ({ ...f, price: BigInt(Math.max(0, parseInt(e.target.value) || 0)) }))}
-            />
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Stock *</label>
-            <input
-              type="number"
-              min={0}
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              placeholder="0"
-              value={Number(form.stock)}
-              onChange={e => setForm(f => ({ ...f, stock: BigInt(Math.max(0, parseInt(e.target.value) || 0)) }))}
-            />
-          </div>
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Category *</label>
-            <select
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              value={form.category}
-              onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-            >
-              <option value="">Select category</option>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Image URL</label>
-            <input
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              placeholder="https://..."
-              value={form.imageUrl}
-              onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={handleSubmit}
-            disabled={isMutating}
-            className="flex-1 bg-amber-700 hover:bg-amber-800 disabled:opacity-60 text-white font-medium py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
-          >
-            {isMutating && <RefreshCw size={14} className="animate-spin" />}
-            {editingProduct ? 'Save Changes' : 'Add Product'}
-          </button>
-          <button
-            onClick={closeForm}
-            disabled={isMutating}
-            className="flex-1 border border-stone-300 hover:bg-stone-50 text-stone-700 font-medium py-2.5 rounded-lg text-sm transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  const showForm = addingProduct || editingProduct !== null;
 
   // ── render ────────────────────────────────────────────────────────────────
   return (
@@ -281,7 +309,12 @@ export default function AdminDashboardPage() {
       {/* Bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 z-40 flex">
         {(['overview', 'products', 'orders', 'inquiries'] as const).map(tab => {
-          const icons = { overview: <LayoutDashboard size={20} />, products: <Package size={20} />, orders: <ShoppingBag size={20} />, inquiries: <MessageSquare size={20} /> };
+          const icons = {
+            overview: <LayoutDashboard size={20} />,
+            products: <Package size={20} />,
+            orders: <ShoppingBag size={20} />,
+            inquiries: <MessageSquare size={20} />,
+          };
           return (
             <button
               key={tab}
@@ -372,7 +405,10 @@ export default function AdminDashboardPage() {
             ) : (
               <div className="space-y-3">
                 {filtered.map(p => (
-                  <div key={p.id.toString()} className={`bg-white rounded-xl border border-stone-200 p-4 flex gap-3 shadow-sm ${!p.isVisible ? 'opacity-60' : ''}`}>
+                  <div
+                    key={p.id.toString()}
+                    className={`bg-white rounded-xl border border-stone-200 p-4 flex gap-3 shadow-sm ${!p.isVisible ? 'opacity-60' : ''}`}
+                  >
                     {p.imageUrl ? (
                       <img src={p.imageUrl} alt={p.name} className="w-16 h-16 object-cover rounded-lg shrink-0 bg-stone-100" />
                     ) : (
@@ -387,7 +423,11 @@ export default function AdminDashboardPage() {
                           <p className="text-xs text-stone-500">{p.sku} · {p.category}</p>
                         </div>
                         <div className="flex gap-1 shrink-0">
-                          <button onClick={() => openEdit(p)} className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-700 transition-colors" title="Edit">
+                          <button
+                            onClick={() => openEdit(p)}
+                            className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-700 transition-colors"
+                            title="Edit"
+                          >
                             <Edit2 size={15} />
                           </button>
                           <button
@@ -403,7 +443,11 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center gap-3 mt-1.5">
                         <span className="text-sm font-bold text-amber-700">₹{Number(p.price)}</span>
                         <span className="text-xs text-stone-500">Stock: {Number(p.stock)}</span>
-                        {!p.isVisible && <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full flex items-center gap-1"><EyeOff size={10} /> Hidden</span>}
+                        {!p.isVisible && (
+                          <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <EyeOff size={10} /> Hidden
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -436,9 +480,18 @@ export default function AdminDashboardPage() {
         )}
       </main>
 
-      {/* Product form modal — rendered as fixed overlay with solid white background */}
-      {(addingProduct || editingProduct) && (
-        <ProductForm title={editingProduct ? 'Edit Product' : 'Add New Product'} />
+      {/* Product form overlay — rendered as a stable top-level component */}
+      {showForm && (
+        <ProductForm
+          title={editingProduct ? 'Edit Product' : 'Add New Product'}
+          form={form}
+          formError={formError}
+          isMutating={isMutating}
+          isEditing={editingProduct !== null}
+          onClose={closeForm}
+          onSubmit={handleSubmit}
+          onFormChange={setForm}
+        />
       )}
     </div>
   );

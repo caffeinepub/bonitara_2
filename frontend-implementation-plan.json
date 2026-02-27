@@ -1,22 +1,23 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Admin Add New Product modal background to solid white",
+  "title": "Fix keyboard input deselection bug in Add New Product modal",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Replace the transparent/semi-transparent grey background of the 'Add New Product' modal with a solid white background in AdminDashboardPage.tsx",
+      "summary": "Fix input field focus loss in Add New Product modal by stabilizing onChange handlers and preventing unnecessary re-renders",
       "acceptanceCriteria": [
-        "The 'Add New Product' panel/modal has a solid white background with no transparency.",
-        "Content behind the modal does not bleed through the panel.",
-        "All form fields (Name, SKU, Description, Price, Stock, Category, Image URL) are clearly legible against the white background.",
-        "The Cancel and Add Product buttons are clearly visible on the white background."
+        "Clicking into any input field in the 'Add New Product' modal and typing multiple characters keeps the field focused throughout.",
+        "No deselection or focus loss occurs after entering any character in Name, SKU, Description, Price, Stock, or Image URL fields.",
+        "The form state correctly reflects all typed characters without resetting or losing intermediate values.",
+        "The modal does not re-mount or flicker when typing in any field.",
+        "Submitting the form with fully typed values works correctly."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/AdminDashboardPage.tsx",
           "operation": "modify",
-          "description": "Replace the modal/panel background class from transparent or semi-transparent grey (likely bg-gray-500/20, bg-gray-800/50, or similar) to solid white (bg-white) in the 'Add New Product' modal container div. Locate the modal wrapper element that contains the form fields and apply bg-white to ensure the form is clearly visible with no content bleeding through from the page behind it. Only modify the background styling—do not alter layout, form fields, buttons, or other functionality."
+          "description": "Refactor the Add New Product modal form to prevent input deselection by: (1) wrapping all onChange handlers in useCallback hooks with proper dependencies to ensure handler stability across re-renders; (2) ensuring the form state (newProduct) is not reset or re-initialized on every render cycle; (3) verifying the modal open/close state management does not cause form re-mounting; (4) ensuring controlled input value bindings use stable references; (5) checking that any Dialog/Modal component wrapper does not steal focus or trigger unnecessary re-renders when state changes. The root cause is likely unstable onChange handlers being recreated on each keystroke, causing React to unmount and remount the inputs. All form fields (Name, SKU, Description, Price, Stock, Image URL, Category) must maintain focus during continuous typing."
         }
       ]
     }

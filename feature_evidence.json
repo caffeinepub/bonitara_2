@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-in-admindashboardpage-tsx-replace-the-transparent-semi-transparent-grey-background-of-the-add-new-product-modal-panel-with-a-solid-white-background-bg-white-so-the-form-fields-and-content-are-clearly-visible-and-not-blending-with-the-page-behind-it",
-      "featureTitle": "In AdminDashboardPage.tsx, replace the transparent/semi-transparent grey background of the 'Add New Product' modal/panel with a solid white background (`bg-white`) so the form fields and content are clearly visible and not blending with the page behind it.",
+      "featureId": "feature-fix-the-add-new-product-modal-in-admindashboardpage-tsx-so-that-typing-in-any-input-field-name-sku-description-price-stock-image-url-does-not-cause-the-field-to-lose-focus-or-deselect-the-root-cause-is-likely-that-the-form-state-update-on-each-keystroke-triggers-a-re-render-that-unmounts-and-remounts-the-input-or-that-the-modal-overlay-component-re-renders-and-steals-focus-ensure-all-controlled-inputs-use-stable-onchange-handlers-e-g-usecallback-or-defined-outside-render-and-that-the-modal-s-open-close-state-does-not-re-initialize-form-state-on-every-keystroke-all-form-fields-must-remain-focused-and-accept-continuous-keyboard-input-without-deselection",
+      "featureTitle": "Fix the 'Add New Product' modal in AdminDashboardPage.tsx so that typing in any input field (Name, SKU, Description, Price, Stock, Image URL) does not cause the field to lose focus or deselect. The root cause is likely that the form state update on each keystroke triggers a re-render that unmounts and remounts the input, or that the modal/overlay component re-renders and steals focus. Ensure all controlled inputs use stable onChange handlers (e.g., useCallback or defined outside render) and that the modal's open/close state does not re-initialize form state on every keystroke. All form fields must remain focused and accept continuous keyboard input without deselection.",
       "files": [
         "frontend/src/pages/AdminDashboardPage.tsx"
       ],

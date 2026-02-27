@@ -1,36 +1,38 @@
 {
   "kind": "build_request",
-  "title": "Fix Admin Add New Product modal background to solid white",
-  "priority": "normal",
+  "title": "Fix keyboard input deselection bug in Add New Product modal",
+  "projectName": "BONITARA",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "In AdminDashboardPage.tsx, replace the transparent/semi-transparent grey background of the 'Add New Product' modal/panel with a solid white background (`bg-white`) so the form fields and content are clearly visible and not blending with the page behind it.",
+      "text": "Fix the 'Add New Product' modal in AdminDashboardPage.tsx so that typing in any input field (Name, SKU, Description, Price, Stock, Image URL) does not cause the field to lose focus or deselect. The root cause is likely that the form state update on each keystroke triggers a re-render that unmounts and remounts the input, or that the modal/overlay component re-renders and steals focus. Ensure all controlled inputs use stable onChange handlers (e.g., useCallback or defined outside render) and that the modal's open/close state does not re-initialize form state on every keystroke. All form fields must remain focused and accept continuous keyboard input without deselection.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-7"
+          "msg-1"
         ],
         "quotes": [
-          "instead of transparent bg add white bg",
-          "the 'Add New Product' modal panel is showing with a transparent/grey background, letting the content behind it bleed through. I'll replace it with a solid white background"
+          "here when enter any word its deselct and then again put a word it deselect fix proeprly keyboard not working at all here"
         ]
       },
       "acceptanceCriteria": [
-        "The 'Add New Product' panel/modal has a solid white background with no transparency.",
-        "Content behind the modal does not bleed through the panel.",
-        "All form fields (Name, SKU, Description, Price, Stock, Category, Image URL) are clearly legible against the white background.",
-        "The Cancel and Add Product buttons are clearly visible on the white background."
+        "Clicking into any input field in the 'Add New Product' modal and typing multiple characters keeps the field focused throughout.",
+        "No deselection or focus loss occurs after entering any character in Name, SKU, Description, Price, Stock, or Image URL fields.",
+        "The form state correctly reflects all typed characters without resetting or losing intermediate values.",
+        "The modal does not re-mount or flicker when typing in any field.",
+        "Submitting the form with fully typed values works correctly."
       ]
     }
   ],
   "constraints": [
-    "Only change the background styling of the Add New Product modal/panel in AdminDashboardPage.tsx — do not alter layout, form fields, or other page sections."
+    "Do not change the visual design or layout of the 'Add New Product' modal.",
+    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui."
   ],
   "nonGoals": [
-    "Redesigning the admin dashboard layout or other modal styles.",
-    "Changes to any other page or component outside AdminDashboardPage.tsx."
+    "Adding new fields to the Add New Product form.",
+    "Changing backend product schema or canister logic.",
+    "Fixing any other page or form outside the Admin Dashboard Add New Product modal."
   ],
   "imageRequirements": {
     "required": [],

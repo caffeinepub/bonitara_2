@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-27T02:48:32.663Z",
+  "generatedAt": "2026-02-27T02:59:42.430Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -12,7 +12,7 @@
     "items": [
       {
         "id": "REQ-1",
-        "summary": "In AdminDashboardPage.tsx, replace the transparent/semi-transparent grey background of the 'Add New Product' modal/panel with a solid white background (`bg-white`) so the form fields and content are clearly visible and not blending with the page behind it.",
+        "summary": "Fix the 'Add New Product' modal in AdminDashboardPage.tsx so that typing in any input field (Name, SKU, Description, Price, Stock, Image URL) does not cause the field to lose focus or deselect. The root cause is likely that the form state update on each keystroke triggers a re-render that unmounts and remounts the input, or that the modal/overlay component re-renders and steals focus. Ensure all controlled inputs use stable onChange handlers (e.g., useCallback or defined outside render) and that the modal's open/close state does not re-initialize form state on every keystroke. All form fields must remain focused and accept continuous keyboard input without deselection.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/AdminDashboardPage.tsx"

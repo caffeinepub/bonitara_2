@@ -1,11 +1,11 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-27T02:48:32.660Z",
-  "summary": "The diff implements REQ-1 by updating AdminDashboardPage.tsx to render the Add/Edit Product form as a fixed full-screen overlay with a solid white modal panel (bg-white) and a dark semi-transparent backdrop (bg-black/40). The file-summaries confirm this change explicitly. No hallucinated features or missing requirements are detected.",
+  "generatedAt": "2026-02-27T02:59:42.427Z",
+  "summary": "The diff implements REQ-1 by extracting the ProductForm component to the top level of the module (outside AdminDashboardPage), which prevents React from unmounting/remounting it on every keystroke and fixes the keyboard input focus-loss bug. The implementation addresses all acceptance criteria: stable component identity prevents re-mounting/flickering, form state is lifted to the parent and passed as props so it does not re-initialize on keystrokes, and all controlled inputs receive onChange handlers. The approach matches the root cause analysis described in the requirement.",
   "missing_requirements": [],
   "hallucinated_features": [],
-  "confidence": 0.95,
+  "confidence": 0.92,
   "changed_files": [
     "frontend-file-summaries.txt",
     "frontend/src/pages/AdminDashboardPage.tsx",
