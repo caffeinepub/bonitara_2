@@ -3,24 +3,10 @@ import { ShoppingCart, Heart } from 'lucide-react';
 import { useCart, useWishlist } from '../App';
 import { StarRatingDisplay } from './StarRating';
 import { useAllProductRatings } from '../hooks/useProductReviews';
-import { Product } from '../data/products';
+import { Product } from '../backend';
 
 interface ProductCardProps {
   product: Product;
-}
-
-// Map string product id to a stable numeric id for the backend review system
-function getNumericProductId(id: string): number {
-  const prefixMap: Record<string, number> = {
-    'sm': 0,
-    'cm': 1000,
-    'ra': 2000,
-    'fr': 3000,
-  };
-  const parts = id.split('-');
-  const prefix = parts[0];
-  const num = parseInt(parts[parts.length - 1]) || 0;
-  return (prefixMap[prefix] ?? 9000) + num;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
@@ -28,20 +14,20 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { toggleWishlist, isWishlisted } = useWishlist();
   const { data: ratingsMap } = useAllProductRatings();
 
-  const numericId = getNumericProductId(product.id);
+  const numericId = Number(product.id);
   const dynamicRating = ratingsMap?.get(numericId) ?? 4.5;
   const wishlisted = isWishlisted(product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product, 1);
+    addToCart(product);
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleWishlist(product.id);
+    toggleWishlist(product);
   };
 
   return (
@@ -52,25 +38,17 @@ export default function ProductCard({ product }: ProductCardProps) {
     >
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-muted">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1">
-          {product.isBestSeller && (
-            <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded-full">
-              Best Seller
-            </span>
-          )}
-          {product.isNew && (
-            <span className="bg-charcoal text-ivory text-xs font-semibold px-2 py-1 rounded-full">
-              New
-            </span>
-          )}
-        </div>
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted">
+            <ShoppingCart className="w-12 h-12 text-muted-foreground/30" />
+          </div>
+        )}
 
         {/* Wishlist button */}
         <button
@@ -89,10 +67,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
           <button
             onClick={handleAddToCart}
-            className="w-full bg-primary text-primary-foreground py-3 flex items-center justify-center gap-2 font-medium text-sm hover:bg-primary/90 transition-colors"
+            disabled={Number(product.stock) === 0}
+            className="w-full bg-primary text-primary-foreground py-3 flex items-center justify-center gap-2 font-medium text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
             <ShoppingCart size={16} />
-            Add to Cart
+            {Number(product.stock) === 0 ? 'Out of Stock' : 'Add to Cart'}
           </button>
         </div>
       </div>
@@ -100,7 +79,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Product Info */}
       <div className="p-4 space-y-2">
         <p className="text-xs text-primary font-medium uppercase tracking-wider">
-          {product.category.replace(/-/g, ' ')}
+          {product.category}
         </p>
         <h3 className="font-semibold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
           {product.name}
@@ -114,9 +93,15 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Price */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-foreground">₹{product.price.toLocaleString('en-IN')}</span>
-          <span className="text-xs text-muted-foreground">
-            Wholesale: ₹{product.wholesalePrice.toLocaleString('en-IN')}
+          <span className="font-bold text-foreground">
+            ₹{Number(product.price).toLocaleString('en-IN')}
+          </span>
+          <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+            Number(product.stock) > 0
+              ? 'bg-green-100 text-green-700'
+              : 'bg-red-100 text-red-700'
+          }`}>
+            {Number(product.stock) > 0 ? 'In Stock' : 'Out of Stock'}
           </span>
         </div>
       </div>

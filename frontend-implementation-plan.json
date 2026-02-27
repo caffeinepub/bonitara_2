@@ -1,212 +1,22 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add Manual Email/Password Authentication and Full Mobile Responsive Pass",
+  "title": "Fix Admin Add New Product modal background to solid white",
   "requirements": [
     {
-      "id": "REQ-36",
-      "summary": "Add manual email/password login and registration system alongside Internet Identity, with admin login support and full authentication flow",
+      "id": "REQ-1",
+      "summary": "Replace the transparent/semi-transparent grey background of the 'Add New Product' modal with a solid white background in AdminDashboardPage.tsx",
       "acceptanceCriteria": [
-        "Login page shows two tabs or sections: 'Manual Login' (email + password) and 'Internet Identity'",
-        "Registration page shows two tabs or sections: 'Manual Registration' (name, email, password, confirm password) and 'Internet Identity'",
-        "Submitting the manual registration form saves the user in the Motoko backend and redirects to the profile page",
-        "Submitting the manual login form validates credentials against the backend and redirects authenticated users to their profile/account page",
-        "Admin can log in with username 'admin' and password 'Bonitara@2024' via the manual login form",
-        "Invalid credentials show a clear error message on the login form",
-        "Password mismatch during registration shows a validation error",
-        "Authenticated users are redirected away from login/register pages",
-        "Unauthenticated users accessing protected pages (Profile, OrderHistory) are redirected to the login page",
-        "Both login and registration pages are mobile-responsive and properly styled with the BONITARA luxury theme"
+        "The 'Add New Product' panel/modal has a solid white background with no transparency.",
+        "Content behind the modal does not bleed through the panel.",
+        "All form fields (Name, SKU, Description, Price, Stock, Category, Image URL) are clearly legible against the white background.",
+        "The Cancel and Add Product buttons are clearly visible on the white background."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/LoginPage.tsx",
-          "operation": "create",
-          "description": "Create a new login page component with two tabs: Manual Login (email + password fields with validation and submit button) and Internet Identity (existing II integration). Use the authorization component to handle manual authentication via the backend loginUser method. Display validation errors inline. Redirect authenticated users to Profile page on successful login. Style with BONITARA luxury theme (ivory/beige/gold palette, Cormorant Garamond headings). Verify the authorization component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/RegisterPage.tsx",
-          "operation": "create",
-          "description": "Create a new registration page component with two tabs: Manual Registration (name, email, password, confirm password fields with validation and submit button) and Internet Identity (existing II integration). Use the authorization component to handle manual registration via the backend registerUser method. Validate password match, display inline errors. Redirect to Profile page after successful registration. Style with BONITARA luxury theme. Verify the authorization component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useManualAuth.ts",
-          "operation": "create",
-          "description": "Create a custom React hook providing manual authentication state and methods. Export useManualAuth hook that returns: isManuallyAuthenticated boolean, manualLogin(email, password) function using backend loginUser method, manualRegister(name, email, password) function using backend registerUser method, manualLogout function clearing auth state, and loading/error states. Store manual auth state in localStorage. Integrate with React Query for backend calls. Use the authorization component for role checking after login."
-        },
-        {
-          "path": "frontend/src/components/ProtectedRoute.tsx",
-          "operation": "create",
-          "description": "Create a ProtectedRoute wrapper component that checks both Internet Identity authentication (via useInternetIdentity) and manual authentication (via useManualAuth). If neither is authenticated, redirect to /login using window.location.hash. Accept children prop and render them only when authenticated. Display a loading spinner during auth check."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Add routes for /login and /register pages to the hash-based router. Wrap the Profile and OrderHistory routes with the ProtectedRoute component to enforce authentication. Add redirect logic on /login and /register routes that sends already-authenticated users to /profile. Import and configure the new LoginPage and RegisterPage components."
-        },
-        {
-          "path": "frontend/src/components/Header.tsx",
-          "operation": "modify",
-          "description": "Update the Header component to detect both Internet Identity and manual authentication states. Merge the authentication states to show a unified Login/Logout button. When user is authenticated via either method, show Logout that calls both clear() (for II) and manualLogout() (for manual auth). Update the login button link to point to /#/login. Display the user profile name from either II profile or manual auth profile."
-        },
-        {
-          "path": "frontend/src/pages/ProfilePage.tsx",
-          "operation": "modify",
-          "description": "Update ProfilePage to support both Internet Identity and manual authentication. Check both auth states using useInternetIdentity and useManualAuth hooks. For manual auth users, fetch profile via getCallerUserProfile (which works for both auth methods per the authorization component). Handle profile setup for first-time manual users. Keep existing II profile setup flow intact. Show appropriate loading states for both auth methods."
-        },
-        {
-          "path": "frontend/src/pages/OrderHistoryPage.tsx",
-          "operation": "modify",
-          "description": "Update OrderHistoryPage to check both Internet Identity and manual authentication states. Show the authenticated order history view if either authentication method is active. Update the login prompt message to direct users to /#/login. Keep existing order data display logic unchanged."
-        },
-        {
           "path": "frontend/src/pages/AdminDashboardPage.tsx",
           "operation": "modify",
-          "description": "Update AdminDashboardPage to support admin login via manual authentication. Replace the existing adminCheck form logic to use the manual authentication hook. After successful admin login (username 'admin', password 'Bonitara@2024'), verify admin role using isCallerAdmin from the backend. Keep existing dashboard tabs and mock data display. Style admin login form consistently with the new LoginPage design."
-        }
-      ]
-    },
-    {
-      "id": "REQ-37",
-      "summary": "Perform comprehensive mobile and responsive layout pass across all pages ensuring proper rendering at 320px, 768px, and 1280px breakpoints with touch-friendly interactions",
-      "acceptanceCriteria": [
-        "All pages render without horizontal overflow on 320px wide screens",
-        "All product grids reflow to 1 column on mobile, 2 columns on tablet, and 3-4 columns on desktop",
-        "All buttons and interactive elements have a minimum touch target size of 44px height",
-        "The Header hamburger menu opens and closes the mobile navigation drawer correctly on all pages",
-        "Images on all pages scale proportionally and do not overflow their containers",
-        "Headings and body text use appropriate font sizes at each breakpoint (no tiny or oversized text)",
-        "Modals (cart, filters, etc.) display correctly and are scrollable on mobile screens",
-        "The checkout form, contact form, wholesale form, and all other forms are fully usable on mobile",
-        "The Admin Dashboard tabs and tables are accessible and usable on mobile (scrollable tables or stacked layout)",
-        "No broken grid layouts or misaligned sections exist on any page at any tested breakpoint",
-        "All CSS transitions and hover effects on cards, buttons, and navigation remain smooth and functional"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/Header.tsx",
-          "operation": "modify",
-          "description": "Audit and fix Header mobile responsiveness: ensure hamburger menu button has min-height 44px, mobile drawer opens/closes smoothly at 320px+, logo scales appropriately, cart/wishlist icon badges remain visible and tappable on small screens. Test sticky positioning doesn't cause layout shifts. Verify all navigation links have adequate touch targets (min 44px height). Ensure the category dropdown is fully usable on mobile with proper z-index and scrolling."
-        },
-        {
-          "path": "frontend/src/components/Footer.tsx",
-          "operation": "modify",
-          "description": "Audit and fix Footer mobile responsiveness: ensure 4-column grid stacks to 1 column on mobile (320px-640px), 2 columns on tablet (640px-1024px), and 4 columns on desktop (1024px+). Verify social media links have min 44px tap targets. Ensure all text is readable at mobile sizes. Check that no horizontal overflow occurs on narrow screens."
-        },
-        {
-          "path": "frontend/src/components/ProductCard.tsx",
-          "operation": "modify",
-          "description": "Audit and fix ProductCard mobile responsiveness: ensure images scale proportionally without distortion, badges don't overlap image on small screens, star rating is clearly visible, add-to-cart and wishlist buttons have min 44px height and are fully tappable. Verify card padding and spacing work at all breakpoints. Ensure price and title text sizes are appropriate on mobile."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix HomePage mobile responsiveness: hero banner must scale properly on 320px+ without overflow, category grid stacks to 1 column on mobile, best-seller product grid uses responsive columns (1 col mobile, 2 tablet, 3-4 desktop), testimonials carousel is swipeable and readable on mobile, newsletter form fields and button are touch-friendly (min 44px height). Verify all sections have appropriate padding and spacing at each breakpoint."
-        },
-        {
-          "path": "frontend/src/pages/CategoryPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix CategoryPage mobile responsiveness: product grid must reflow to 1 column on mobile (320px-640px), 2 columns on tablet (640px-1024px), 3-4 columns on desktop. Filter slide-in panel must display correctly on mobile with proper z-index and full-height scrolling. Sort dropdown and filter button have min 44px tap targets. Max-price range slider is usable on touch screens. Hero banner scales without overflow."
-        },
-        {
-          "path": "frontend/src/pages/ProductDetailPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix ProductDetailPage mobile responsiveness: product images scale proportionally and don't overflow on 320px screens, quantity selector buttons have min 44px height, add-to-cart and wishlist buttons are fully tappable, product details section stacks properly on mobile, reviews section is readable and scrollable, related products grid uses responsive columns. Verify all text sizes are appropriate at each breakpoint."
-        },
-        {
-          "path": "frontend/src/pages/CartPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix CartPage mobile responsiveness: cart item list stacks properly on mobile with images scaling correctly, quantity controls have min 44px touch targets, remove buttons are easily tappable, order summary card displays correctly on narrow screens without overflow. Ensure checkout button has min 44px height. Test empty cart state on mobile."
-        },
-        {
-          "path": "frontend/src/pages/CheckoutPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix CheckoutPage mobile responsiveness: multi-step form fields are fully usable on 320px+ screens, input fields have adequate height for touch interaction, radio buttons for payment methods are easy to select on mobile, step indicators adapt to narrow screens, order summary displays correctly on mobile. Verify form validation messages are visible and don't cause layout shifts. Ensure submit button has min 44px height."
-        },
-        {
-          "path": "frontend/src/pages/ProfilePage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix ProfilePage mobile responsiveness: profile form fields are touch-friendly with adequate height, edit/save buttons have min 44px height, wishlist grid uses responsive columns (1 col mobile, 2 tablet, 3-4 desktop), profile info displays clearly on narrow screens. Ensure first-time profile setup modal is fully visible and usable on mobile. Check that all text is readable at mobile sizes."
-        },
-        {
-          "path": "frontend/src/pages/OrderHistoryPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix OrderHistoryPage mobile responsiveness: order list items stack properly on mobile, status badges are visible and readable, order details are clearly displayed on narrow screens, login prompt (for unauthenticated users) is centered and readable on mobile. Ensure all interactive elements have adequate touch targets."
-        },
-        {
-          "path": "frontend/src/pages/BlogListingPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix BlogListingPage mobile responsiveness: blog post grid uses responsive columns (1 col mobile, 2 tablet, 3 desktop), thumbnail images scale proportionally, post excerpts are readable at all breakpoints, category and date text sizes are appropriate on mobile. Ensure no horizontal overflow occurs on narrow screens."
-        },
-        {
-          "path": "frontend/src/pages/BlogPostPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix BlogPostPage mobile responsiveness: hero image scales without distortion on 320px+ screens, post content is readable with appropriate line lengths and font sizes on mobile, tags display inline and wrap properly, related posts grid uses responsive columns. Ensure all padding and spacing work at each breakpoint."
-        },
-        {
-          "path": "frontend/src/pages/WholesalePage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix WholesalePage mobile responsiveness: pricing tier cards stack to 1 column on mobile, feature highlight grid adapts to narrow screens, wholesale inquiry form fields are touch-friendly with min 44px height, submit button is fully tappable. Ensure all text is readable and no overflow occurs on 320px screens."
-        },
-        {
-          "path": "frontend/src/pages/FAQPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix FAQPage mobile responsiveness: accordion items display correctly on narrow screens with touch-friendly headers (min 44px height), expanded content is readable at mobile font sizes, call-to-action section stacks properly on mobile. Ensure expand/collapse icons are clearly visible and tappable."
-        },
-        {
-          "path": "frontend/src/pages/ShippingPolicyPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix ShippingPolicyPage mobile responsiveness: summary cards stack to 1 column on mobile, policy sections are readable with appropriate text sizes, headings scale correctly at each breakpoint. Ensure no horizontal overflow on 320px screens and adequate padding on narrow viewports."
-        },
-        {
-          "path": "frontend/src/pages/TermsPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix TermsPage mobile responsiveness: terms sections are readable with appropriate text sizes on mobile, headings scale correctly, content width adapts to narrow screens without overflow. Ensure adequate padding and line height for comfortable mobile reading."
-        },
-        {
-          "path": "frontend/src/pages/ReturnPolicyPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix ReturnPolicyPage mobile responsiveness: policy content is readable with appropriate text sizes on mobile, sections are well-spaced, headings scale correctly at each breakpoint. Ensure no horizontal overflow on 320px screens and comfortable reading line lengths."
-        },
-        {
-          "path": "frontend/src/pages/ContactPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix ContactPage mobile responsiveness: contact info cards stack to 1 column on mobile, contact form fields are touch-friendly with min 44px height input fields and submit button, map placeholder scales correctly, social media links have adequate tap targets. Ensure all text is readable and form is fully usable on 320px+ screens."
-        },
-        {
-          "path": "frontend/src/pages/AdminDashboardPage.tsx",
-          "operation": "modify",
-          "description": "Audit and fix AdminDashboardPage mobile responsiveness: tab navigation is usable on mobile with touch-friendly tabs (min 44px height), overview stat cards stack to 1 column on narrow screens, data tables are scrollable horizontally on mobile (use overflow-x-auto wrapper), form inputs and action buttons have adequate touch targets. Ensure dashboard is fully functional on 320px+ screens even if horizontal scrolling is required for wide tables."
-        },
-        {
-          "path": "frontend/src/components/ReviewForm.tsx",
-          "operation": "modify",
-          "description": "Audit and fix ReviewForm mobile responsiveness: ensure star rating selector is easily tappable on mobile (adequate spacing between stars), form input fields have min 44px height, submit button is fully tappable, validation messages display correctly on narrow screens. Verify form is usable on 320px+ screens without overflow."
-        },
-        {
-          "path": "frontend/src/components/ReviewsList.tsx",
-          "operation": "modify",
-          "description": "Audit and fix ReviewsList mobile responsiveness: review cards stack properly on mobile, star ratings are clearly visible, review text is readable with appropriate font sizes, author and timestamp display correctly on narrow screens. Ensure loading skeletons and empty states are mobile-friendly."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Audit and add global responsive utility classes and mobile-specific overrides. Ensure base font sizes scale appropriately across breakpoints (use clamp() if needed). Add utility classes for common mobile patterns (stacked layouts, touch-friendly spacing). Verify all custom animations work smoothly on mobile devices. Add media query overrides for any global styles that need mobile-specific adjustments."
-        },
-        {
-          "path": "frontend/tailwind.config.js",
-          "operation": "modify",
-          "description": "Review and adjust Tailwind breakpoints if needed to ensure proper responsive behavior at 320px, 768px, and 1280px. Verify custom spacing, typography, and color scales work well at all breakpoints. Add any missing responsive utilities needed for mobile-first design. Ensure custom shadows and border radii are appropriate for mobile touch interfaces."
-        },
-        {
-          "path": "frontend/src/pages/LoginPage.tsx",
-          "operation": "modify",
-          "description": "Ensure the new LoginPage is fully mobile-responsive: tabs/sections are touch-friendly, form inputs have min 44px height, buttons have adequate tap targets, validation errors display clearly on narrow screens, Internet Identity integration remains usable on mobile. Test at 320px, 768px, and 1280px breakpoints."
-        },
-        {
-          "path": "frontend/src/pages/RegisterPage.tsx",
-          "operation": "modify",
-          "description": "Ensure the new RegisterPage is fully mobile-responsive: tabs/sections are touch-friendly, all form inputs (name, email, password, confirm password) have min 44px height, submit button has adequate tap target, password mismatch errors display clearly on mobile, Internet Identity integration remains usable on narrow screens. Test at 320px, 768px, and 1280px breakpoints."
+          "description": "Replace the modal/panel background class from transparent or semi-transparent grey (likely bg-gray-500/20, bg-gray-800/50, or similar) to solid white (bg-white) in the 'Add New Product' modal container div. Locate the modal wrapper element that contains the form fields and apply bg-white to ensure the form is clearly visible with no content bleeding through from the page behind it. Only modify the background styling—do not alter layout, form fields, buttons, or other functionality."
         }
       ]
     }

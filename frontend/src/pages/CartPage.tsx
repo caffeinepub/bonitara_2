@@ -32,9 +32,13 @@ export default function CartPage() {
           {/* Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map(item => (
-              <div key={item.product.id} className="bg-card border border-border p-4 flex gap-4 rounded-sm">
-                <a href={`#/product/${item.product.id}`} className="w-20 h-20 shrink-0 overflow-hidden rounded-sm bg-beige">
-                  <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+              <div key={item.product.id.toString()} className="bg-card border border-border p-4 flex gap-4 rounded-sm">
+                <a href={`#/product/${item.product.id}`} className="w-20 h-20 shrink-0 overflow-hidden rounded-sm bg-muted">
+                  {item.product.imageUrl ? (
+                    <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-muted" />
+                  )}
                 </a>
                 <div className="flex-1 min-w-0">
                   <a
@@ -48,21 +52,21 @@ export default function CartPage() {
                     <div className="flex items-center border border-border">
                       <button
                         onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-beige transition-colors text-sm"
+                        className="w-8 h-8 flex items-center justify-center hover:bg-muted transition-colors text-sm"
                       >
                         −
                       </button>
                       <span className="w-10 text-center font-sans text-sm">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-beige transition-colors text-sm"
+                        className="w-8 h-8 flex items-center justify-center hover:bg-muted transition-colors text-sm"
                       >
                         +
                       </button>
                     </div>
                     <div className="flex items-center gap-4">
                       <span className="font-sans font-semibold text-charcoal">
-                        ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
+                        ₹{(Number(item.product.price) * item.quantity).toLocaleString('en-IN')}
                       </span>
                       <button
                         onClick={() => removeFromCart(item.product.id)}

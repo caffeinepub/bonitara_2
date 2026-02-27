@@ -10,7 +10,27 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Product {
+  'id' : bigint,
+  'sku' : string,
+  'name' : string,
+  'description' : string,
+  'stock' : bigint,
+  'imageUrl' : string,
+  'isVisible' : boolean,
+  'category' : string,
+  'price' : bigint,
+}
 export type ProductId = bigint;
+export interface ProductInput {
+  'sku' : string,
+  'name' : string,
+  'description' : string,
+  'stock' : bigint,
+  'imageUrl' : string,
+  'category' : string,
+  'price' : bigint,
+}
 export interface ProductReviews {
   'reviews' : Array<Review>,
   'averageRating' : [] | [Rating],
@@ -43,17 +63,22 @@ export type UserRole = { 'admin' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addProduct' : ActorMethod<[ProductInput], bigint>,
   'adminCheck' : ActorMethod<[string, string], boolean>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'assignUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'deleteProduct' : ActorMethod<[bigint], boolean>,
   'getAllProductAverageRatings' : ActorMethod<
     [],
     Array<[ProductId, [] | [Rating]]>
   >,
+  'getAllProducts' : ActorMethod<[], Array<Product>>,
+  'getAllProductsAdmin' : ActorMethod<[], Array<Product>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getProductRatingSummary' : ActorMethod<[ProductId], [] | [ProductReviews]>,
   'getProductReviewCount' : ActorMethod<[ProductId], bigint>,
+  'getProductsByCategory' : ActorMethod<[string], Array<Product>>,
   'getReviews' : ActorMethod<[ProductId], ProductReviews>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getUserRole' : ActorMethod<[Principal], UserRole>,
@@ -62,6 +87,7 @@ export interface _SERVICE {
   'registerUser' : ActorMethod<[RegistrationInput], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'submitReview' : ActorMethod<[ProductId, ReviewInput], undefined>,
+  'updateProduct' : ActorMethod<[bigint, ProductInput], boolean>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

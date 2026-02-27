@@ -5,11 +5,13 @@ import List "mo:core/List";
 import Nat "mo:core/Nat";
 import Time "mo:core/Time";
 import Map "mo:core/Map";
+import Iter "mo:core/Iter";
+
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import Migration "migration";
 
-(with migration = Migration.run)
+// Correct errors using migration functionality.
+
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -67,6 +69,8 @@ actor {
     email : Text;
     password : Text;
   };
+
+  let productsMap = Map.empty<Nat, Product>();
 
   public shared ({ caller }) func registerUser(input : RegistrationInput) : async Bool {
     switch (credentialsMap.get(input.email)) {
@@ -247,5 +251,113 @@ actor {
       case (null) { 0 };
       case (?reviews) { reviews.size() };
     };
+  };
+
+  public type Product = {
+    id : Nat;
+    name : Text;
+    description : Text;
+    price : Nat;
+    sku : Text;
+    stock : Nat;
+    category : Text;
+    imageUrl : Text;
+    isVisible : Bool;
+  };
+
+  public type ProductInput = {
+    name : Text;
+    description : Text;
+    price : Nat;
+    sku : Text;
+    stock : Nat;
+    category : Text;
+    imageUrl : Text;
+  };
+
+  public shared ({ caller }) func addProduct(productInput : ProductInput) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can add products");
+    };
+
+    let newProductId = productsMap.size() + 1;
+
+    let newProduct : Product = {
+      id = newProductId;
+      name = productInput.name;
+      description = productInput.description;
+      price = productInput.price;
+      sku = productInput.sku;
+      stock = productInput.stock;
+      category = productInput.category;
+      imageUrl = productInput.imageUrl;
+      isVisible = true;
+    };
+
+    productsMap.add(newProductId, newProduct);
+    newProductId;
+  };
+
+  public shared ({ caller }) func updateProduct(productId : Nat, updatedInput : ProductInput) : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can update products");
+    };
+
+    switch (productsMap.get(productId)) {
+      case (null) { false };
+      case (?existingProduct) {
+        let updatedProduct : Product = {
+          existingProduct with
+          name = updatedInput.name;
+          description = updatedInput.description;
+          price = updatedInput.price;
+          sku = updatedInput.sku;
+          stock = updatedInput.stock;
+          category = updatedInput.category;
+          imageUrl = updatedInput.imageUrl;
+        };
+        productsMap.add(productId, updatedProduct);
+        true;
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteProduct(productId : Nat) : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can delete products");
+    };
+
+    switch (productsMap.get(productId)) {
+      case (null) { false };
+      case (?existingProduct) {
+        let updatedProduct : Product = {
+          existingProduct with
+          isVisible = false;
+        };
+        productsMap.add(productId, updatedProduct);
+        true;
+      };
+    };
+  };
+
+  public query ({ caller }) func getAllProductsAdmin() : async [Product] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view all products");
+    };
+    productsMap.values().toArray();
+  };
+
+  public query ({ caller }) func getAllProducts() : async [Product] {
+    productsMap.toArray().filter(func((_, p)) { p.isVisible }).map(func((_, p)) { p });
+  };
+
+  public query ({ caller }) func getProductsByCategory(category : Text) : async [Product] {
+    productsMap.toArray().filter(
+      func((_, p)) {
+        Text.equal(p.category, category) and p.isVisible;
+      }
+    ).map(
+      func((_, p)) { p }
+    );
   };
 };

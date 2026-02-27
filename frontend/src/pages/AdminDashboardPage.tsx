@@ -1,346 +1,445 @@
-import React, { useState } from 'react';
+import { useState, useContext } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../hooks/useActor';
-import { useManualAuth } from '../hooks/useManualAuth';
-import { Loader2, LayoutDashboard, Package, ShoppingBag, MessageSquare, Eye, EyeOff, Shield } from 'lucide-react';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { Product, ProductInput } from '../backend';
+import { Package, ShoppingBag, MessageSquare, LayoutDashboard, LogOut, Plus, Search, RefreshCw, Edit2, Trash2, Eye, EyeOff, X } from 'lucide-react';
 
-const mockStats = [
-  { label: 'Total Revenue', value: '₹1,24,500', change: '+12%' },
-  { label: 'Total Orders', value: '342', change: '+8%' },
-  { label: 'Products', value: '48', change: '+3' },
-  { label: 'Customers', value: '1,205', change: '+24' },
-];
+// ── helpers ──────────────────────────────────────────────────────────────────
+const CATEGORIES = ['Soap Making', 'Candle Making', 'Resin Art', 'Fragrance'];
 
-const mockProducts = [
-  { id: 'P001', name: 'Sandalwood Dreams Candle', category: 'Candles', price: 650, stock: 45 },
-  { id: 'P002', name: 'Jasmine Bloom Perfume', category: 'Fragrances', price: 1800, stock: 12 },
-  { id: 'P003', name: 'Ocean Breeze Resin Art', category: 'Resin', price: 950, stock: 8 },
-  { id: 'P004', name: 'Rose Petal Soap Bar', category: 'Soaps', price: 550, stock: 67 },
-  { id: 'P005', name: 'Lavender Mist Candle', category: 'Candles', price: 400, stock: 30 },
-];
+const emptyForm = (): ProductInput => ({
+  name: '',
+  sku: '',
+  description: '',
+  price: 0n,
+  stock: 0n,
+  category: '',
+  imageUrl: '',
+});
 
-const mockOrders = [
-  { id: 'ORD-001', customer: 'Priya Sharma', date: 'Feb 20, 2024', total: '₹1,850', status: 'Delivered' },
-  { id: 'ORD-002', customer: 'Rahul Mehta', date: 'Feb 19, 2024', total: '₹2,200', status: 'Shipped' },
-  { id: 'ORD-003', customer: 'Anita Patel', date: 'Feb 18, 2024', total: '₹950', status: 'Processing' },
-  { id: 'ORD-004', customer: 'Vikram Singh', date: 'Feb 17, 2024', total: '₹3,400', status: 'Delivered' },
-];
+// ── sub-components ────────────────────────────────────────────────────────────
+function StatCard({ label, value, icon }: { label: string; value: string | number; icon: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-xl border border-stone-200 p-5 flex items-center gap-4 shadow-sm">
+      <div className="p-3 bg-amber-50 rounded-lg text-amber-700">{icon}</div>
+      <div>
+        <p className="text-xs text-stone-500 uppercase tracking-wide">{label}</p>
+        <p className="text-2xl font-bold text-stone-800">{value}</p>
+      </div>
+    </div>
+  );
+}
 
-const mockInquiries = [
-  { id: 'INQ-001', name: 'Sunita Enterprises', email: 'sunita@example.com', message: 'Interested in bulk order of 500 candles for corporate gifting.', date: 'Feb 20, 2024' },
-  { id: 'INQ-002', name: 'Aroma World', email: 'aroma@example.com', message: 'Looking for wholesale pricing on fragrances.', date: 'Feb 18, 2024' },
-];
-
+// ── main component ────────────────────────────────────────────────────────────
 export default function AdminDashboardPage() {
-  const { actor } = useActor();
-  const { isManuallyAuthenticated, manualUser } = useManualAuth();
+  const { actor, isFetching: actorFetching } = useActor();
+  const { clear } = useInternetIdentity();
+  const queryClient = useQueryClient();
 
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(manualUser?.isAdmin || false);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loginError, setLoginError] = useState('');
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'inquiries'>('overview');
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [addingProduct, setAddingProduct] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [form, setForm] = useState<ProductInput>(emptyForm());
+  const [formError, setFormError] = useState('');
 
-  const handleAdminLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!actor) {
-      setLoginError('Service not available. Please try again.');
+  // ── queries ──────────────────────────────────────────────────────────────
+  const { data: products = [], isLoading, refetch } = useQuery<Product[]>({
+    queryKey: ['adminProducts'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllProductsAdmin();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+
+  // ── mutations ─────────────────────────────────────────────────────────────
+  const addMutation = useMutation({
+    mutationFn: async (input: ProductInput) => {
+      if (!actor) throw new Error('No actor');
+      return actor.addProduct(input);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setAddingProduct(false);
+      setForm(emptyForm());
+      setFormError('');
+    },
+    onError: (e: any) => setFormError(e.message ?? 'Failed to add product'),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, input }: { id: bigint; input: ProductInput }) => {
+      if (!actor) throw new Error('No actor');
+      return actor.updateProduct(id, input);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setEditingProduct(null);
+      setForm(emptyForm());
+      setFormError('');
+    },
+    onError: (e: any) => setFormError(e.message ?? 'Failed to update product'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error('No actor');
+      return actor.deleteProduct(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+
+  // ── derived ───────────────────────────────────────────────────────────────
+  const filtered = products.filter(p => {
+    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
+    const matchCat = !categoryFilter || p.category === categoryFilter;
+    return matchSearch && matchCat;
+  });
+
+  const visibleProducts = products.filter(p => p.isVisible);
+  const totalStock = products.reduce((s, p) => s + Number(p.stock), 0);
+
+  // ── form helpers ──────────────────────────────────────────────────────────
+  const openAdd = () => {
+    setForm(emptyForm());
+    setFormError('');
+    setEditingProduct(null);
+    setAddingProduct(true);
+  };
+
+  const openEdit = (p: Product) => {
+    setForm({
+      name: p.name,
+      sku: p.sku,
+      description: p.description,
+      price: p.price,
+      stock: p.stock,
+      category: p.category,
+      imageUrl: p.imageUrl,
+    });
+    setFormError('');
+    setAddingProduct(false);
+    setEditingProduct(p);
+  };
+
+  const closeForm = () => {
+    setAddingProduct(false);
+    setEditingProduct(null);
+    setForm(emptyForm());
+    setFormError('');
+  };
+
+  const handleSubmit = () => {
+    if (!form.name.trim() || !form.sku.trim() || !form.category) {
+      setFormError('Name, SKU, and Category are required.');
       return;
     }
-    setIsLoggingIn(true);
-    setLoginError('');
-    try {
-      const success = await actor.adminCheck(loginEmail.trim(), loginPassword);
-      if (success) {
-        setIsAdminLoggedIn(true);
-      } else {
-        setLoginError('Invalid admin credentials. Please try again.');
-      }
-    } catch (err) {
-      setLoginError('Login failed. Please try again.');
-    } finally {
-      setIsLoggingIn(false);
+    if (editingProduct) {
+      updateMutation.mutate({ id: editingProduct.id, input: form });
+    } else {
+      addMutation.mutate(form);
     }
   };
 
-  if (!isAdminLoggedIn) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="font-serif text-3xl text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground text-sm mt-2">Sign in with admin credentials to continue</p>
+  const isMutating = addMutation.isPending || updateMutation.isPending;
+
+  // ── product form panel ────────────────────────────────────────────────────
+  const ProductForm = ({ title }: { title: string }) => (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 pt-16">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-stone-200 p-6 my-4">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-bold text-stone-800">{title}</h2>
+          <button onClick={closeForm} className="p-1 rounded-lg hover:bg-stone-100 text-stone-500">
+            <X size={20} />
+          </button>
+        </div>
+
+        {formError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{formError}</div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Name *</label>
+            <input
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              placeholder="Product name"
+              value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            />
           </div>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-sm font-medium text-stone-700 mb-1">SKU *</label>
+            <input
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              placeholder="SKU-001"
+              value={form.sku}
+              onChange={e => setForm(f => ({ ...f, sku: e.target.value }))}
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
+            <textarea
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white resize-none"
+              rows={3}
+              placeholder="Product description..."
+              value={form.description}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            />
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Price (₹) *</label>
+            <input
+              type="number"
+              min={0}
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              placeholder="0"
+              value={Number(form.price)}
+              onChange={e => setForm(f => ({ ...f, price: BigInt(Math.max(0, parseInt(e.target.value) || 0)) }))}
+            />
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Stock *</label>
+            <input
+              type="number"
+              min={0}
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              placeholder="0"
+              value={Number(form.stock)}
+              onChange={e => setForm(f => ({ ...f, stock: BigInt(Math.max(0, parseInt(e.target.value) || 0)) }))}
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Category *</label>
+            <select
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              value={form.category}
+              onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+            >
+              <option value="">Select category</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-stone-700 mb-1">Image URL</label>
+            <input
+              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+              placeholder="https://..."
+              value={form.imageUrl}
+              onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
+            />
+          </div>
+        </div>
 
-          <div className="bg-card border border-border rounded-2xl shadow-lg p-6 sm:p-8">
-            {/* Dev hint */}
-            <div className="bg-muted/50 rounded-lg p-3 mb-6 text-xs text-muted-foreground">
-              <p className="font-medium mb-1">Development Credentials:</p>
-              <p>Username: <code className="bg-muted px-1 rounded">admin</code></p>
-              <p>Password: <code className="bg-muted px-1 rounded">Bonitara@2024</code></p>
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={handleSubmit}
+            disabled={isMutating}
+            className="flex-1 bg-amber-700 hover:bg-amber-800 disabled:opacity-60 text-white font-medium py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+          >
+            {isMutating && <RefreshCw size={14} className="animate-spin" />}
+            {editingProduct ? 'Save Changes' : 'Add Product'}
+          </button>
+          <button
+            onClick={closeForm}
+            disabled={isMutating}
+            className="flex-1 border border-stone-300 hover:bg-stone-50 text-stone-700 font-medium py-2.5 rounded-lg text-sm transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── render ────────────────────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen bg-stone-50">
+      {/* Header */}
+      <header className="bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+        <div className="flex items-center gap-3">
+          <LayoutDashboard size={22} className="text-amber-700" />
+          <span className="font-bold text-stone-800 text-lg">Bonitara Admin</span>
+        </div>
+        <button
+          onClick={async () => { await clear(); queryClient.clear(); window.location.hash = '/'; }}
+          className="flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900 transition-colors"
+        >
+          <LogOut size={16} />
+          Sign Out
+        </button>
+      </header>
+
+      {/* Bottom nav */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 z-40 flex">
+        {(['overview', 'products', 'orders', 'inquiries'] as const).map(tab => {
+          const icons = { overview: <LayoutDashboard size={20} />, products: <Package size={20} />, orders: <ShoppingBag size={20} />, inquiries: <MessageSquare size={20} /> };
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${activeTab === tab ? 'text-amber-700' : 'text-stone-500 hover:text-stone-700'}`}
+            >
+              {icons[tab]}
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Main content */}
+      <main className="pb-24 px-4 pt-6 max-w-4xl mx-auto">
+
+        {/* Overview tab */}
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            <h1 className="text-2xl font-bold text-stone-800">Overview</h1>
+            {isLoading ? (
+              <div className="grid grid-cols-2 gap-4">
+                {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-stone-200 rounded-xl animate-pulse" />)}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <StatCard label="Total Products" value={products.length} icon={<Package size={20} />} />
+                <StatCard label="Visible" value={visibleProducts.length} icon={<Eye size={20} />} />
+                <StatCard label="Total Stock" value={totalStock} icon={<ShoppingBag size={20} />} />
+                <StatCard label="Categories" value={CATEGORIES.length} icon={<LayoutDashboard size={20} />} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Products tab */}
+        {activeTab === 'products' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-stone-800">Products</h1>
+              <button
+                onClick={openAdd}
+                className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                <Plus size={16} />
+                Add Product
+              </button>
             </div>
 
-            <form onSubmit={handleAdminLogin} className="space-y-4">
-              {loginError && (
-                <div className="bg-destructive/10 border border-destructive/30 text-destructive text-sm rounded-lg px-4 py-3">
-                  {loginError}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Username</label>
+            {/* Filters */}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
                 <input
-                  type="text"
-                  value={loginEmail}
-                  onChange={e => setLoginEmail(e.target.value)}
-                  placeholder="admin"
-                  className="w-full h-11 px-4 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
-                  disabled={isLoggingIn}
+                  className="w-full pl-9 pr-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                  placeholder="Search by name or SKU..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={loginPassword}
-                    onChange={e => setLoginPassword(e.target.value)}
-                    placeholder="Enter admin password"
-                    className="w-full h-11 px-4 pr-11 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
-                    disabled={isLoggingIn}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoggingIn}
-                className="w-full h-11 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
+              <select
+                className="border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                value={categoryFilter}
+                onChange={e => setCategoryFilter(e.target.value)}
               >
-                {isLoggingIn ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</> : 'Sign In as Admin'}
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'products', label: 'Products', icon: Package },
-    { id: 'orders', label: 'Orders', icon: ShoppingBag },
-    { id: 'inquiries', label: 'Inquiries', icon: MessageSquare },
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-muted/30 border-b border-border py-6 sm:py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="font-serif text-2xl sm:text-3xl text-foreground">Admin Dashboard</h1>
-              <p className="text-muted-foreground text-sm mt-1">Manage your BONITARA store</p>
-            </div>
-            <button
-              onClick={() => setIsAdminLoggedIn(false)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 border border-border rounded-lg min-h-[44px]"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="border-b border-border bg-background sticky top-16 sm:top-20 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-0 overflow-x-auto">
-            {tabs.map(tab => (
+                <option value="">All</option>
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 sm:px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap min-h-[44px] ${
-                  activeTab === tab.id
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
+                onClick={() => refetch()}
+                className="p-2 border border-stone-300 rounded-lg hover:bg-stone-100 text-stone-600 transition-colors"
+                title="Refresh"
               >
-                <tab.icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <RefreshCw size={16} />
               </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Overview */}
-        {activeTab === 'overview' && (
-          <div className="space-y-6 sm:space-y-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {mockStats.map(stat => (
-                <div key={stat.label} className="bg-card border border-border rounded-xl p-4 sm:p-6">
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-1">{stat.label}</p>
-                  <p className="font-serif text-xl sm:text-2xl text-foreground">{stat.value}</p>
-                  <p className="text-xs text-green-600 mt-1">{stat.change} this month</p>
-                </div>
-              ))}
             </div>
 
-            <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
-              <h3 className="font-serif text-lg text-foreground mb-4">Recent Orders</h3>
-              <div className="overflow-x-auto -mx-4 sm:mx-0">
-                <table className="w-full min-w-[500px]">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left text-xs font-medium text-muted-foreground pb-3 px-4 sm:px-0">Order ID</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground pb-3">Customer</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground pb-3">Date</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground pb-3">Total</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground pb-3 pr-4 sm:pr-0">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {mockOrders.map(order => (
-                      <tr key={order.id}>
-                        <td className="py-3 text-sm text-foreground px-4 sm:px-0">{order.id}</td>
-                        <td className="py-3 text-sm text-foreground">{order.customer}</td>
-                        <td className="py-3 text-sm text-muted-foreground">{order.date}</td>
-                        <td className="py-3 text-sm text-foreground font-medium">{order.total}</td>
-                        <td className="py-3 pr-4 sm:pr-0">
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                            order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
-                            order.status === 'Shipped' ? 'bg-blue-100 text-blue-700' :
-                            'bg-amber-100 text-amber-700'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {/* Product list */}
+            {isLoading ? (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => <div key={i} className="h-20 bg-stone-200 rounded-xl animate-pulse" />)}
               </div>
-            </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-16 text-stone-500">
+                <Package size={40} className="mx-auto mb-3 opacity-30" />
+                <p>No products found.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filtered.map(p => (
+                  <div key={p.id.toString()} className={`bg-white rounded-xl border border-stone-200 p-4 flex gap-3 shadow-sm ${!p.isVisible ? 'opacity-60' : ''}`}>
+                    {p.imageUrl ? (
+                      <img src={p.imageUrl} alt={p.name} className="w-16 h-16 object-cover rounded-lg shrink-0 bg-stone-100" />
+                    ) : (
+                      <div className="w-16 h-16 bg-stone-100 rounded-lg shrink-0 flex items-center justify-center">
+                        <Package size={20} className="text-stone-400" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-stone-800 truncate">{p.name}</p>
+                          <p className="text-xs text-stone-500">{p.sku} · {p.category}</p>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <button onClick={() => openEdit(p)} className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-700 transition-colors" title="Edit">
+                            <Edit2 size={15} />
+                          </button>
+                          <button
+                            onClick={() => deleteMutation.mutate(p.id)}
+                            disabled={deleteMutation.isPending}
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 mt-1.5">
+                        <span className="text-sm font-bold text-amber-700">₹{Number(p.price)}</span>
+                        <span className="text-xs text-stone-500">Stock: {Number(p.stock)}</span>
+                        {!p.isVisible && <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full flex items-center gap-1"><EyeOff size={10} /> Hidden</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Products */}
-        {activeTab === 'products' && (
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className="p-4 sm:p-6 border-b border-border flex items-center justify-between gap-4">
-              <h3 className="font-serif text-lg text-foreground">Products</h3>
-              <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors min-h-[44px]">
-                + Add Product
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[500px]">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left text-xs font-medium text-muted-foreground py-3 px-4 sm:px-6">Product</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-3">Category</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-3">Price</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-3 pr-4 sm:pr-6">Stock</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {mockProducts.map(product => (
-                    <tr key={product.id} className="hover:bg-muted/20 transition-colors">
-                      <td className="py-3 px-4 sm:px-6">
-                        <p className="text-sm font-medium text-foreground">{product.name}</p>
-                        <p className="text-xs text-muted-foreground">{product.id}</p>
-                      </td>
-                      <td className="py-3 text-sm text-muted-foreground">{product.category}</td>
-                      <td className="py-3 text-sm text-foreground font-medium">₹{product.price}</td>
-                      <td className="py-3 pr-4 sm:pr-6">
-                        <span className={`text-sm font-medium ${product.stock < 15 ? 'text-red-600' : 'text-green-600'}`}>
-                          {product.stock}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Orders */}
+        {/* Orders tab */}
         {activeTab === 'orders' && (
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className="p-4 sm:p-6 border-b border-border">
-              <h3 className="font-serif text-lg text-foreground">All Orders</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[500px]">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left text-xs font-medium text-muted-foreground py-3 px-4 sm:px-6">Order ID</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-3">Customer</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-3">Date</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-3">Total</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-3 pr-4 sm:pr-6">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {mockOrders.map(order => (
-                    <tr key={order.id} className="hover:bg-muted/20 transition-colors">
-                      <td className="py-3 px-4 sm:px-6 text-sm font-medium text-foreground">{order.id}</td>
-                      <td className="py-3 text-sm text-foreground">{order.customer}</td>
-                      <td className="py-3 text-sm text-muted-foreground">{order.date}</td>
-                      <td className="py-3 text-sm font-medium text-foreground">{order.total}</td>
-                      <td className="py-3 pr-4 sm:pr-6">
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
-                          order.status === 'Shipped' ? 'bg-blue-100 text-blue-700' :
-                          'bg-amber-100 text-amber-700'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="space-y-4">
+            <h1 className="text-2xl font-bold text-stone-800">Orders</h1>
+            <div className="text-center py-16 text-stone-500">
+              <ShoppingBag size={40} className="mx-auto mb-3 opacity-30" />
+              <p>No orders yet.</p>
             </div>
           </div>
         )}
 
-        {/* Inquiries */}
+        {/* Inquiries tab */}
         {activeTab === 'inquiries' && (
           <div className="space-y-4">
-            <h3 className="font-serif text-lg text-foreground">Wholesale Inquiries</h3>
-            {mockInquiries.map(inq => (
-              <div key={inq.id} className="bg-card border border-border rounded-xl p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
-                  <div>
-                    <p className="font-medium text-foreground">{inq.name}</p>
-                    <p className="text-sm text-muted-foreground">{inq.email}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground shrink-0">{inq.date}</span>
-                </div>
-                <p className="text-sm text-foreground/80 leading-relaxed">{inq.message}</p>
-              </div>
-            ))}
+            <h1 className="text-2xl font-bold text-stone-800">Inquiries</h1>
+            <div className="text-center py-16 text-stone-500">
+              <MessageSquare size={40} className="mx-auto mb-3 opacity-30" />
+              <p>No inquiries yet.</p>
+            </div>
           </div>
         )}
-      </div>
+      </main>
+
+      {/* Product form modal — rendered as fixed overlay with solid white background */}
+      {(addingProduct || editingProduct) && (
+        <ProductForm title={editingProduct ? 'Edit Product' : 'Add New Product'} />
+      )}
     </div>
   );
 }

@@ -2,18 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-manual-email-password-login-and-registration-system-to-the-site-the-login-page-must-present-two-options-1-manual-login-with-email-and-password-fields-and-a-login-button-and-2-internet-identity-existing-the-registration-page-must-present-two-options-1-manual-registration-with-name-email-password-and-confirm-password-fields-and-a-register-button-and-2-internet-identity-both-pages-must-be-clearly-laid-out-so-regular-users-and-the-admin-can-easily-understand-and-use-them-the-admin-can-use-username-admin-and-password-bonitara-2024-via-the-manual-login-path-store-registered-user-credentials-in-the-motoko-backend-and-validate-login-against-stored-records",
-      "featureTitle": "Add a manual email/password login and registration system to the site. The login page must present two options: (1) Manual login with email and password fields and a 'Login' button, and (2) Internet Identity (existing). The registration page must present two options: (1) Manual registration with name, email, password, and confirm password fields and a 'Register' button, and (2) Internet Identity. Both pages must be clearly laid out so regular users and the admin can easily understand and use them. The admin can use username 'admin' and password 'Bonitara@2024' via the manual login path. Store registered user credentials in the Motoko backend and validate login against stored records.",
+      "featureId": "feature-in-admindashboardpage-tsx-replace-the-transparent-semi-transparent-grey-background-of-the-add-new-product-modal-panel-with-a-solid-white-background-bg-white-so-the-form-fields-and-content-are-clearly-visible-and-not-blending-with-the-page-behind-it",
+      "featureTitle": "In AdminDashboardPage.tsx, replace the transparent/semi-transparent grey background of the 'Add New Product' modal/panel with a solid white background (`bg-white`) so the form fields and content are clearly visible and not blending with the page behind it.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/Header.tsx",
-        "frontend/src/components/ProtectedRoute.tsx",
-        "frontend/src/hooks/useManualAuth.ts",
-        "frontend/src/pages/AdminDashboardPage.tsx",
-        "frontend/src/pages/LoginPage.tsx",
-        "frontend/src/pages/OrderHistoryPage.tsx",
-        "frontend/src/pages/ProfilePage.tsx",
-        "frontend/src/pages/RegisterPage.tsx"
+        "frontend/src/pages/AdminDashboardPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -24,33 +16,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-36"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-perform-a-comprehensive-mobile-and-responsive-layout-pass-across-all-pages-of-the-bonitara-site-every-page-home-category-productdetail-cart-checkout-profile-orderhistory-blog-wholesale-faq-shippingpolicy-terms-returnpolicy-contactus-and-admindashboard-must-render-correctly-and-without-overflow-broken-grids-or-misaligned-elements-on-mobile-320px-tablet-768px-and-desktop-1280px-breakpoints-all-interactive-elements-buttons-cards-modals-dropdowns-forms-navigation-menus-must-have-touch-friendly-tap-targets-minimum-44px-images-must-resize-correctly-without-distortion-font-sizes-must-scale-appropriately-across-breakpoints-the-hamburger-mobile-menu-must-open-and-close-correctly-modals-and-overlays-must-display-properly-on-small-screens",
-      "featureTitle": "Perform a comprehensive mobile and responsive layout pass across all pages of the BONITARA site. Every page — Home, Category, ProductDetail, Cart, Checkout, Profile, OrderHistory, Blog, Wholesale, FAQ, ShippingPolicy, Terms, ReturnPolicy, ContactUs, and AdminDashboard — must render correctly and without overflow, broken grids, or misaligned elements on mobile (320px+), tablet (768px+), and desktop (1280px+) breakpoints. All interactive elements (buttons, cards, modals, dropdowns, forms, navigation menus) must have touch-friendly tap targets (minimum 44px). Images must resize correctly without distortion. Font sizes must scale appropriately across breakpoints. The hamburger mobile menu must open and close correctly. Modals and overlays must display properly on small screens.",
-      "files": [
-        "frontend/src/components/Footer.tsx",
-        "frontend/src/components/Header.tsx",
-        "frontend/src/pages/AdminDashboardPage.tsx",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/src/pages/LoginPage.tsx",
-        "frontend/src/pages/OrderHistoryPage.tsx",
-        "frontend/src/pages/ProfilePage.tsx",
-        "frontend/src/pages/RegisterPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-37"
+        "REQ-1"
       ],
       "confidence": "high"
     }

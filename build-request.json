@@ -1,74 +1,36 @@
 {
   "kind": "build_request",
-  "title": "Add manual login/registration with email+password and full mobile responsive pass",
-  "projectName": "BONITARA",
+  "title": "Fix Admin Add New Product modal background to solid white",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-36",
-      "text": "Add a manual email/password login and registration system to the site. The login page must present two options: (1) Manual login with email and password fields and a 'Login' button, and (2) Internet Identity (existing). The registration page must present two options: (1) Manual registration with name, email, password, and confirm password fields and a 'Register' button, and (2) Internet Identity. Both pages must be clearly laid out so regular users and the admin can easily understand and use them. The admin can use username 'admin' and password 'Bonitara@2024' via the manual login path. Store registered user credentials in the Motoko backend and validate login against stored records.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-user-login-request"
-        ],
-        "quotes": [
-          "When I click on login so give me manual login as well so I can add id and password and for first give registration option with manual and google as well so easy to mine for admin login and easy to people proper understanding"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Login page shows two tabs or sections: 'Manual Login' (email + password) and 'Internet Identity'",
-        "Registration page shows two tabs or sections: 'Manual Registration' (name, email, password, confirm password) and 'Internet Identity'",
-        "Submitting the manual registration form saves the user in the Motoko backend and redirects to the profile page",
-        "Submitting the manual login form validates credentials against the backend and redirects authenticated users to their profile/account page",
-        "Admin can log in with username 'admin' and password 'Bonitara@2024' via the manual login form",
-        "Invalid credentials show a clear error message on the login form",
-        "Password mismatch during registration shows a validation error",
-        "Authenticated users are redirected away from login/register pages",
-        "Unauthenticated users accessing protected pages (Profile, OrderHistory) are redirected to the login page",
-        "Both login and registration pages are mobile-responsive and properly styled with the BONITARA luxury theme"
-      ]
-    },
-    {
-      "id": "REQ-37",
-      "text": "Perform a comprehensive mobile and responsive layout pass across all pages of the BONITARA site. Every page — Home, Category, ProductDetail, Cart, Checkout, Profile, OrderHistory, Blog, Wholesale, FAQ, ShippingPolicy, Terms, ReturnPolicy, ContactUs, and AdminDashboard — must render correctly and without overflow, broken grids, or misaligned elements on mobile (320px+), tablet (768px+), and desktop (1280px+) breakpoints. All interactive elements (buttons, cards, modals, dropdowns, forms, navigation menus) must have touch-friendly tap targets (minimum 44px). Images must resize correctly without distortion. Font sizes must scale appropriately across breakpoints. The hamburger mobile menu must open and close correctly. Modals and overlays must display properly on small screens.",
+      "id": "REQ-1",
+      "text": "In AdminDashboardPage.tsx, replace the transparent/semi-transparent grey background of the 'Add New Product' modal/panel with a solid white background (`bg-white`) so the form fields and content are clearly visible and not blending with the page behind it.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-responsive-request"
+          "msg-6",
+          "msg-7"
         ],
         "quotes": [
-          "After finish this process please make pac and mobile fully responsive web app so easy to use in any device"
+          "instead of transparent bg add white bg",
+          "the 'Add New Product' modal panel is showing with a transparent/grey background, letting the content behind it bleed through. I'll replace it with a solid white background"
         ]
       },
       "acceptanceCriteria": [
-        "All pages render without horizontal overflow on 320px wide screens",
-        "All product grids reflow to 1 column on mobile, 2 columns on tablet, and 3-4 columns on desktop",
-        "All buttons and interactive elements have a minimum touch target size of 44px height",
-        "The Header hamburger menu opens and closes the mobile navigation drawer correctly on all pages",
-        "Images on all pages scale proportionally and do not overflow their containers",
-        "Headings and body text use appropriate font sizes at each breakpoint (no tiny or oversized text)",
-        "Modals (cart, filters, etc.) display correctly and are scrollable on mobile screens",
-        "The checkout form, contact form, wholesale form, and all other forms are fully usable on mobile",
-        "The Admin Dashboard tabs and tables are accessible and usable on mobile (scrollable tables or stacked layout)",
-        "No broken grid layouts or misaligned sections exist on any page at any tested breakpoint",
-        "All CSS transitions and hover effects on cards, buttons, and navigation remain smooth and functional"
+        "The 'Add New Product' panel/modal has a solid white background with no transparency.",
+        "Content behind the modal does not bleed through the panel.",
+        "All form fields (Name, SKU, Description, Price, Stock, Category, Image URL) are clearly legible against the white background.",
+        "The Cancel and Add Product buttons are clearly visible on the white background."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files in frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "Keep all Motoko logic in the single main actor at backend/main.mo",
-    "Internet Identity login option must remain functional alongside the new manual login",
-    "Admin credentials must remain: username 'admin', password 'Bonitara@2024'",
-    "Maintain the existing BONITARA luxury theme (ivory/beige/soft gold/charcoal palette, Cormorant Garamond + Jost typography)"
+    "Only change the background styling of the Add New Product modal/panel in AdminDashboardPage.tsx — do not alter layout, form fields, or other page sections."
   ],
   "nonGoals": [
-    "OAuth/Google Sign-In integration (not supported by the platform)",
-    "Third-party authentication providers (Auth0, Firebase, etc.)",
-    "Email verification or password reset flows via external email services",
-    "SMS/OTP authentication",
-    "Changes to existing product data or backend review/rating logic"
+    "Redesigning the admin dashboard layout or other modal styles.",
+    "Changes to any other page or component outside AdminDashboardPage.tsx."
   ],
   "imageRequirements": {
     "required": [],

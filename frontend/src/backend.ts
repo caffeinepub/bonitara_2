@@ -94,6 +94,26 @@ export interface RegistrationInput {
     name: string;
     email: string;
 }
+export interface ProductInput {
+    sku: string;
+    name: string;
+    description: string;
+    stock: bigint;
+    imageUrl: string;
+    category: string;
+    price: bigint;
+}
+export interface Product {
+    id: bigint;
+    sku: string;
+    name: string;
+    description: string;
+    stock: bigint;
+    imageUrl: string;
+    isVisible: boolean;
+    category: string;
+    price: bigint;
+}
 export type Time = bigint;
 export type Rating = bigint;
 export type ProductId = bigint;
@@ -127,14 +147,19 @@ export enum UserRole {
 }
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
+    addProduct(productInput: ProductInput): Promise<bigint>;
     adminCheck(email: string, password: string): Promise<boolean>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     assignUserRole(user: Principal, role: UserRole): Promise<void>;
+    deleteProduct(productId: bigint): Promise<boolean>;
     getAllProductAverageRatings(): Promise<Array<[ProductId, Rating | null]>>;
+    getAllProducts(): Promise<Array<Product>>;
+    getAllProductsAdmin(): Promise<Array<Product>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getProductRatingSummary(productId: ProductId): Promise<ProductReviews | null>;
     getProductReviewCount(productId: ProductId): Promise<bigint>;
+    getProductsByCategory(category: string): Promise<Array<Product>>;
     getReviews(productId: ProductId): Promise<ProductReviews>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getUserRole(user: Principal): Promise<UserRole>;
@@ -143,6 +168,7 @@ export interface backendInterface {
     registerUser(input: RegistrationInput): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     submitReview(productId: ProductId, reviewInput: ReviewInput): Promise<void>;
+    updateProduct(productId: bigint, updatedInput: ProductInput): Promise<boolean>;
 }
 import type { ProductId as _ProductId, ProductReviews as _ProductReviews, Rating as _Rating, Review as _Review, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -158,6 +184,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor._initializeAccessControlWithSecret(arg0);
+            return result;
+        }
+    }
+    async addProduct(arg0: ProductInput): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addProduct(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addProduct(arg0);
             return result;
         }
     }
@@ -203,6 +243,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async deleteProduct(arg0: bigint): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteProduct(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteProduct(arg0);
+            return result;
+        }
+    }
     async getAllProductAverageRatings(): Promise<Array<[ProductId, Rating | null]>> {
         if (this.processError) {
             try {
@@ -215,6 +269,34 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getAllProductAverageRatings();
             return from_candid_vec_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getAllProducts(): Promise<Array<Product>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllProducts();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllProducts();
+            return result;
+        }
+    }
+    async getAllProductsAdmin(): Promise<Array<Product>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllProductsAdmin();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllProductsAdmin();
+            return result;
         }
     }
     async getCallerUserProfile(): Promise<UserProfile | null> {
@@ -270,6 +352,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.getProductReviewCount(arg0);
+            return result;
+        }
+    }
+    async getProductsByCategory(arg0: string): Promise<Array<Product>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getProductsByCategory(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getProductsByCategory(arg0);
             return result;
         }
     }
@@ -382,6 +478,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.submitReview(arg0, arg1);
+            return result;
+        }
+    }
+    async updateProduct(arg0: bigint, arg1: ProductInput): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateProduct(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateProduct(arg0, arg1);
             return result;
         }
     }

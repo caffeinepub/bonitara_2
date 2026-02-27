@@ -1,103 +1,196 @@
-import React, { useState, useMemo } from 'react';
-import { SlidersHorizontal, X } from 'lucide-react';
-import { products, categories } from '../data/products';
+import React, { useState, useEffect } from 'react';
+import { useActor } from '../hooks/useActor';
+import { Product } from '../backend';
 import ProductCard from '../components/ProductCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import { SlidersHorizontal, ChevronDown } from 'lucide-react';
 
-interface Props { slug: string; }
+interface CategoryPageProps {
+  category: string;
+}
 
-type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc';
+const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
+  'soap-making': 'Soap Making',
+  'candle-making': 'Candle Making',
+  'resin-art': 'Resin Art',
+  'fragrance': 'Fragrance',
+  'soap': 'Soap Making',
+  'candle': 'Candle Making',
+  'resin': 'Resin Art',
+  'Soap Making': 'Soap Making',
+  'Candle Making': 'Candle Making',
+  'Resin Art': 'Resin Art',
+  'Fragrance': 'Fragrance',
+};
 
-export default function CategoryPage({ slug }: Props) {
-  const category = categories.find(c => c.slug === slug);
-  const [sort, setSort] = useState<SortOption>('default');
-  const [maxPrice, setMaxPrice] = useState(2000);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+const CATEGORY_IMAGES: Record<string, string> = {
+  'soap-making': '/assets/generated/category-soap.dim_600x400.png',
+  'candle-making': '/assets/generated/category-candle.dim_600x400.png',
+  'resin-art': '/assets/generated/category-resin.dim_600x400.png',
+  'fragrance': '/assets/generated/category-fragrance.dim_600x400.png',
+  'soap': '/assets/generated/category-soap.dim_600x400.png',
+  'candle': '/assets/generated/category-candle.dim_600x400.png',
+  'resin': '/assets/generated/category-resin.dim_600x400.png',
+};
 
-  const catKey = slug as 'soap-making' | 'candle-making' | 'resin-art' | 'fragrance';
-  const filtered = useMemo(() => {
-    let list = products.filter(p => p.category === catKey && p.price <= maxPrice);
-    if (sort === 'price-asc') list = [...list].sort((a, b) => a.price - b.price);
-    else if (sort === 'price-desc') list = [...list].sort((a, b) => b.price - a.price);
-    else if (sort === 'name-asc') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
-    return list;
-  }, [catKey, sort, maxPrice]);
+// Map URL slug to backend category string
+function getCategoryBackendName(slug: string): string {
+  const map: Record<string, string> = {
+    'soap-making': 'Soap Making',
+    'candle-making': 'Candle Making',
+    'resin-art': 'Resin Art',
+    'fragrance': 'Fragrance',
+    'soap': 'Soap Making',
+    'candle': 'Candle Making',
+    'resin': 'Resin Art',
+  };
+  // If it's already a display name, return as-is
+  if (Object.values(map).includes(slug)) return slug;
+  return map[slug] || slug;
+}
 
-  if (!category) return (
-    <div className="container mx-auto px-4 py-20 text-center">
-      <h2 className="font-serif text-3xl text-charcoal">Category not found</h2>
-      <a href="#/" className="text-gold font-sans text-sm mt-4 inline-block">← Back to Home</a>
-    </div>
-  );
+export default function CategoryPage({ category }: CategoryPageProps) {
+  const { actor, isFetching: actorFetching } = useActor();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState('default');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
+  const [maxPrice, setMaxPrice] = useState(100000);
+
+  const backendCategory = getCategoryBackendName(category);
+  const displayName = CATEGORY_DISPLAY_NAMES[category] || backendCategory;
+  const categoryImage = CATEGORY_IMAGES[category];
+
+  useEffect(() => {
+    if (!actor || actorFetching) return;
+
+    setLoading(true);
+    setError(null);
+
+    actor.getProductsByCategory(backendCategory)
+      .then(result => {
+        setProducts(result);
+        if (result.length > 0) {
+          const max = Math.max(...result.map(p => Number(p.price)));
+          setMaxPrice(max);
+          setPriceRange([0, max]);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching products by category:', err);
+        setError('Failed to load products. Please try again.');
+        setLoading(false);
+      });
+  }, [actor, actorFetching, backendCategory]);
+
+  const filteredProducts = products
+    .filter(p => {
+      const price = Number(p.price);
+      return price >= priceRange[0] && price <= priceRange[1];
+    })
+    .sort((a, b) => {
+      if (sortBy === 'price-asc') return Number(a.price) - Number(b.price);
+      if (sortBy === 'price-desc') return Number(b.price) - Number(a.price);
+      if (sortBy === 'name-asc') return a.name.localeCompare(b.name);
+      return 0;
+    });
 
   return (
-    <div className="bg-background min-h-screen">
-      {/* Hero */}
-      <div className="relative h-48 md:h-64 overflow-hidden bg-charcoal">
-        <img src={category.image} alt={category.name} className="w-full h-full object-cover opacity-40" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <p className="font-sans text-gold tracking-[0.25em] text-xs uppercase mb-2">Collection</p>
-          <h1 className="font-serif text-4xl md:text-5xl text-ivory">{category.name}</h1>
-          <p className="font-sans text-ivory/60 text-sm mt-2 max-w-md">{category.description}</p>
+    <div className="min-h-screen bg-background">
+      {/* Category Banner */}
+      <div className="relative h-48 md:h-64 overflow-hidden">
+        {categoryImage ? (
+          <img
+            src={categoryImage}
+            alt={displayName}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-primary/10" />
+        )}
+        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+          <div className="text-center text-white">
+            <h1 className="font-display text-3xl md:text-5xl mb-2">{displayName}</h1>
+            <p className="font-body text-white/80">
+              {loading ? '...' : `${filteredProducts.length} products`}
+            </p>
+          </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Toolbar */}
+        {/* Filters & Sort Bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-border">
-          <p className="font-sans text-sm text-muted-foreground">{filtered.length} products</p>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground font-body">
+            <SlidersHorizontal className="w-4 h-4" />
+            <span>
+              {loading ? 'Loading...' : `Showing ${filteredProducts.length} of ${products.length} products`}
+            </span>
+          </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setFiltersOpen(!filtersOpen)}
-              className="flex items-center gap-2 px-4 py-2 border border-border text-sm font-sans hover:border-gold transition-colors"
-            >
-              <SlidersHorizontal size={14} /> Filters
-            </button>
-            <select
-              value={sort}
-              onChange={e => setSort(e.target.value as SortOption)}
-              className="px-4 py-2 border border-border bg-card text-sm font-sans focus:outline-none focus:border-gold"
-            >
-              <option value="default">Sort: Default</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="name-asc">Name: A–Z</option>
-            </select>
+            <label className="text-sm font-body text-muted-foreground">Sort by:</label>
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+                className="appearance-none bg-background border border-border rounded-sm px-3 py-1.5 pr-8 text-sm font-body text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value="default">Default</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name-asc">Name: A to Z</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            </div>
           </div>
         </div>
 
-        {/* Filters panel */}
-        {filtersOpen && (
-          <div className="bg-card border border-border p-6 mb-8 rounded-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-serif text-lg text-charcoal">Filters</h3>
-              <button onClick={() => setFiltersOpen(false)}><X size={16} /></button>
-            </div>
-            <div className="max-w-xs">
-              <label className="font-sans text-sm text-charcoal block mb-2">
-                Max Price: <span className="text-gold font-medium">₹{maxPrice}</span>
-              </label>
-              <input
-                type="range" min={100} max={2000} step={50}
-                value={maxPrice}
-                onChange={e => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-gold"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground font-sans mt-1">
-                <span>₹100</span><span>₹2000</span>
+        {/* Content */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="aspect-square w-full rounded-sm" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
               </div>
-            </div>
+            ))}
           </div>
-        )}
-
-        {/* Grid */}
-        {filtered.length === 0 ? (
+        ) : error ? (
           <div className="text-center py-20">
-            <p className="font-serif text-2xl text-charcoal mb-2">No products found</p>
-            <p className="font-sans text-sm text-muted-foreground">Try adjusting your filters.</p>
+            <p className="text-destructive font-body mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-primary text-primary-foreground px-6 py-2 rounded-sm font-body hover:bg-primary/90 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <SlidersHorizontal className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="font-display text-xl text-foreground mb-2">No products found</h3>
+            <p className="text-muted-foreground font-body mb-6">
+              {products.length === 0
+                ? `No products are available in the "${displayName}" category yet.`
+                : 'No products match your current filters.'}
+            </p>
+            <a
+              href="#/"
+              className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-sm font-body hover:bg-primary/90 transition-colors"
+            >
+              Back to Home
+            </a>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filtered.map(p => <ProductCard key={p.id} product={p} />)}
+            {filteredProducts.map(product => (
+              <ProductCard key={product.id.toString()} product={product} />
+            ))}
           </div>
         )}
       </div>

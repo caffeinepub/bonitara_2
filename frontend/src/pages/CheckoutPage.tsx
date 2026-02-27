@@ -143,16 +143,20 @@ export default function CheckoutPage() {
               <h2 className="font-serif text-xl text-charcoal mb-6">Order Summary</h2>
               <div className="space-y-3 mb-6">
                 {items.map(item => (
-                  <div key={item.product.id} className="flex gap-3">
-                    <div className="w-12 h-12 shrink-0 overflow-hidden rounded-sm bg-beige">
-                      <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                  <div key={item.product.id.toString()} className="flex gap-3">
+                    <div className="w-12 h-12 shrink-0 overflow-hidden rounded-sm bg-muted">
+                      {item.product.imageUrl ? (
+                        <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-muted" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-sans text-xs text-charcoal line-clamp-1">{item.product.name}</p>
                       <p className="font-sans text-xs text-muted-foreground">Qty: {item.quantity}</p>
                     </div>
                     <span className="font-sans text-xs font-semibold text-charcoal shrink-0">
-                      ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
+                      ₹{(Number(item.product.price) * item.quantity).toLocaleString('en-IN')}
                     </span>
                   </div>
                 ))}
@@ -168,17 +172,22 @@ export default function CheckoutPage() {
                     {shipping === 0 ? 'FREE' : `₹${shipping}`}
                   </span>
                 </div>
-                <div className="flex justify-between font-semibold text-base pt-2 border-t border-border">
-                  <span>Total</span>
-                  <span>₹{total.toLocaleString('en-IN')}</span>
+                {shipping > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Add ₹{(999 - subtotal).toLocaleString('en-IN')} more for free shipping
+                  </p>
+                )}
+                <div className="border-t border-border pt-3 flex justify-between font-semibold text-base">
+                  <span className="text-charcoal">Total</span>
+                  <span className="text-charcoal">₹{total.toLocaleString('en-IN')}</span>
                 </div>
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-charcoal text-ivory font-sans text-sm tracking-widest hover:bg-gold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-charcoal text-ivory font-sans text-sm tracking-widest hover:bg-gold transition-colors duration-200 disabled:opacity-60"
               >
-                {loading ? 'Processing…' : 'PLACE ORDER'}
+                {loading ? 'PROCESSING...' : 'PLACE ORDER'}
               </button>
             </div>
           </div>

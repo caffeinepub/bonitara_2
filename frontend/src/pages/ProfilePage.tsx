@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useManualAuth } from '../hooks/useManualAuth';
 import { useActor } from '../hooks/useActor';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useWishlist } from '../App';
-import { products } from '../data/products';
+import { useWishlist, useCart } from '../App';
 import ProductCard from '../components/ProductCard';
-import { Loader2, Edit2, Save, X, User, Heart, Package } from 'lucide-react';
+import { Loader2, Edit2, Save, X, User, Heart, Package, ShoppingCart } from 'lucide-react';
 import type { UserProfile } from '../backend';
 
 function useGetCallerUserProfile() {
@@ -29,24 +27,23 @@ function useGetCallerUserProfile() {
 
 export default function ProfilePage() {
   const { identity } = useInternetIdentity();
-  const { isManuallyAuthenticated, manualUser } = useManualAuth();
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  const { items: wishlistIds } = useWishlist();
+  const { wishlistItems, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
 
-  const isAuthenticated = !!identity || isManuallyAuthenticated;
+  const isAuthenticated = !!identity;
 
   const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
-  const [setupName, setSetupName] = useState(manualUser?.name || '');
-  const [setupEmail, setSetupEmail] = useState(manualUser?.email || '');
+  const [setupName, setSetupName] = useState('');
+  const [setupEmail, setSetupEmail] = useState('');
   const [activeTab, setActiveTab] = useState<'profile' | 'wishlist' | 'orders'>('profile');
 
-  // For manual auth users, we show a simplified profile
-  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null && !!identity;
+  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
 
   const saveMutation = useMutation({
     mutationFn: async (profile: UserProfile) => {
@@ -72,16 +69,10 @@ export default function ProfilePage() {
   };
 
   const startEdit = () => {
-    const profile = userProfile || (manualUser ? { name: manualUser.name, email: manualUser.email } : null);
-    setEditName(profile?.name || '');
-    setEditEmail(profile?.email || '');
+    setEditName(userProfile?.name || '');
+    setEditEmail(userProfile?.email || '');
     setIsEditing(true);
   };
-
-  const wishlistProducts = products.filter(p => wishlistIds.includes(p.id));
-
-  // Determine display profile
-  const displayProfile = userProfile || (manualUser ? { name: manualUser.name, email: manualUser.email } : null);
 
   if (!isAuthenticated) {
     return (
@@ -90,9 +81,12 @@ export default function ProfilePage() {
           <User className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h2 className="font-serif text-2xl text-foreground mb-2">Sign In Required</h2>
           <p className="text-muted-foreground mb-6">Please sign in to view your profile.</p>
-          <a href="#/login" className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium">
+          <button
+            onClick={() => window.location.hash = '/login'}
+            className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+          >
             Sign In
-          </a>
+          </button>
         </div>
       </div>
     );
@@ -106,7 +100,6 @@ export default function ProfilePage() {
     );
   }
 
-  // Profile setup modal for II users
   if (showProfileSetup) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -159,10 +152,10 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1 min-w-0">
               <h1 className="font-serif text-2xl sm:text-3xl text-foreground truncate">
-                {displayProfile?.name || 'My Account'}
+                {userProfile?.name || 'My Account'}
               </h1>
-              {displayProfile?.email && (
-                <p className="text-muted-foreground text-sm mt-0.5 truncate">{displayProfile.email}</p>
+              {userProfile?.email && (
+                <p className="text-muted-foreground text-sm mt-0.5 truncate">{userProfile.email}</p>
               )}
             </div>
           </div>
@@ -175,7 +168,7 @@ export default function ProfilePage() {
           <div className="flex gap-0 overflow-x-auto">
             {[
               { id: 'profile', label: 'Profile', icon: User },
-              { id: 'wishlist', label: `Wishlist (${wishlistIds.length})`, icon: Heart },
+              { id: 'wishlist', label: `Wishlist (${wishlistItems.length})`, icon: Heart },
               { id: 'orders', label: 'Orders', icon: Package },
             ].map(tab => (
               <button
@@ -253,18 +246,12 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div className="p-4 bg-muted/30 rounded-xl">
                     <p className="text-xs text-muted-foreground mb-1">Full Name</p>
-                    <p className="text-foreground font-medium">{displayProfile?.name || '—'}</p>
+                    <p className="text-foreground font-medium">{userProfile?.name || '—'}</p>
                   </div>
                   <div className="p-4 bg-muted/30 rounded-xl">
                     <p className="text-xs text-muted-foreground mb-1">Email Address</p>
-                    <p className="text-foreground font-medium">{displayProfile?.email || '—'}</p>
+                    <p className="text-foreground font-medium">{userProfile?.email || '—'}</p>
                   </div>
-                  {manualUser?.isAdmin && (
-                    <div className="p-4 bg-primary/10 rounded-xl border border-primary/20">
-                      <p className="text-xs text-primary mb-1">Role</p>
-                      <p className="text-primary font-medium">Administrator</p>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -275,7 +262,7 @@ export default function ProfilePage() {
         {activeTab === 'wishlist' && (
           <div>
             <h2 className="font-serif text-xl text-foreground mb-6">My Wishlist</h2>
-            {wishlistProducts.length === 0 ? (
+            {wishlistItems.length === 0 ? (
               <div className="text-center py-16">
                 <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">Your wishlist is empty.</p>
@@ -285,8 +272,8 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {wishlistProducts.map(product => (
-                  <ProductCard key={product.id} product={product} />
+                {wishlistItems.map(product => (
+                  <ProductCard key={product.id.toString()} product={product} />
                 ))}
               </div>
             )}
