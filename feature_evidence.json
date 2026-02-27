@@ -2,28 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-remove-the-admin-panel-link-from-the-main-navigation-menu-header-tsx-so-regular-users-cannot-see-or-navigate-to-the-admin-panel-from-the-header",
-      "featureTitle": "Remove the admin panel link from the main navigation menu (Header.tsx) so regular users cannot see or navigate to the admin panel from the header.",
+      "featureId": "feature-fix-the-routing-configuration-in-app-tsx-so-that-navigating-to-the-admin-route-correctly-renders-the-adminloginpage-or-admindashboardpage-if-already-authenticated-the-hash-based-router-must-handle-the-admin-path-and-all-sub-routes-e-g-admin-dashboard-without-falling-through-to-a-404-or-blank-screen",
+      "featureTitle": "Fix the routing configuration in App.tsx so that navigating to the /admin route correctly renders the AdminLoginPage (or AdminDashboardPage if already authenticated). The hash-based router must handle the /admin path and all sub-routes (e.g., /admin/dashboard) without falling through to a 404 or blank screen.",
       "files": [
-        "frontend/src/components/Header.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-create-a-dedicated-admin-login-page-at-the-route-admin-login-with-a-manual-username-password-form-hardcode-the-credentials-as-username-admin-password-admin123-on-successful-login-store-an-admin-session-flag-e-g-in-localstorage-or-sessionstorage-and-redirect-to-admin-on-failed-login-display-an-error-message",
-      "featureTitle": "Create a dedicated admin login page at the route `/admin/login` with a manual username/password form. Hardcode the credentials as username: `admin`, password: `admin123`. On successful login, store an admin session flag (e.g., in localStorage or sessionStorage) and redirect to `/admin`. On failed login, display an error message.",
-      "files": [
+        "frontend/src/App.tsx",
         "frontend/src/pages/AdminLoginPage.tsx"
       ],
       "components": [
@@ -32,68 +14,11 @@
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-protect-the-admin-dashboard-route-admin-with-an-admin-authentication-guard-if-the-admin-session-flag-is-not-present-redirect-the-user-to-admin-login-instead-of-rendering-the-admin-dashboard-provide-a-logout-button-on-the-admin-dashboard-that-clears-the-session-flag-and-redirects-to-admin-login",
-      "featureTitle": "Protect the admin dashboard route (`/admin`) with an admin authentication guard. If the admin session flag is not present, redirect the user to `/admin/login` instead of rendering the admin dashboard. Provide a logout button on the admin dashboard that clears the session flag and redirects to `/admin/login`.",
-      "files": [
-        "frontend/src/components/AdminProtectedRoute.tsx",
-        "frontend/src/pages/AdminDashboardPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-main-site-sign-in-page-loginpage-tsx-to-include-both-a-sign-in-and-a-sign-up-option-using-internet-identity-the-page-should-clearly-present-internet-identity-login-as-the-authentication-method-for-regular-users-with-a-visible-option-to-register-sign-up-for-new-users-on-the-same-page",
-      "featureTitle": "Update the main site Sign In page (LoginPage.tsx) to include both a sign-in and a sign-up option using Internet Identity. The page should clearly present Internet Identity login as the authentication method for regular users, with a visible option to register/sign up for new users on the same page.",
-      "files": [
-        "frontend/src/pages/LoginPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-hash-based-router-in-app-tsx-to-include-routes-for-admin-login-renders-the-new-adminloginpage-and-ensure-admin-is-guarded-by-the-admin-session-check-rendering-admindashboardpage-only-when-authenticated-as-admin",
-      "featureTitle": "Update the hash-based router in App.tsx to include routes for `/admin/login` (renders the new AdminLoginPage) and ensure `/admin` is guarded by the admin session check, rendering AdminDashboardPage only when authenticated as admin.",
-      "files": [
-        "frontend/src/App.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
+        "REQ-1"
       ],
       "confidence": "high"
     }

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Loader2, Lock, Shield } from 'lucide-react';
-
-// Hardcoded admin credentials — change these in the source code to update
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'admin123';
+import { useActor } from '../hooks/useActor';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -11,11 +8,12 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { actor } = useActor();
 
   // If already logged in as admin, redirect to dashboard
   useEffect(() => {
     if (sessionStorage.getItem('adminSession') === 'true') {
-      window.location.hash = '/admin';
+      window.location.hash = '/admin/dashboard';
     }
   }, []);
 
@@ -34,17 +32,34 @@ export default function AdminLoginPage() {
 
     setIsLoading(true);
 
-    // Simulate a brief loading state for UX
-    await new Promise(resolve => setTimeout(resolve, 400));
+    try {
+      let isValid = false;
 
-    if (username.trim() === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      sessionStorage.setItem('adminSession', 'true');
-      window.location.hash = '/admin';
-    } else {
-      setError('Invalid username or password. Please try again.');
+      if (actor) {
+        // Use backend adminCheck for validation
+        isValid = await actor.adminCheck(username.trim(), password);
+      } else {
+        // Fallback: hardcoded credentials matching backend
+        isValid = username.trim() === 'admin' && password === 'Bonitara@2024';
+      }
+
+      if (isValid) {
+        sessionStorage.setItem('adminSession', 'true');
+        window.location.hash = '/admin/dashboard';
+      } else {
+        setError('Invalid username or password. Please try again.');
+      }
+    } catch (err) {
+      // Fallback to hardcoded credentials if backend call fails
+      if (username.trim() === 'admin' && password === 'Bonitara@2024') {
+        sessionStorage.setItem('adminSession', 'true');
+        window.location.hash = '/admin/dashboard';
+      } else {
+        setError('Invalid username or password. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (

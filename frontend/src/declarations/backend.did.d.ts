@@ -19,6 +19,18 @@ export interface AddProductInput {
   'category' : string,
   'price' : bigint,
 }
+export interface AdminAddProductInput {
+  'name' : string,
+  'description' : string,
+  'stock' : bigint,
+  'imageUrl' : string,
+  'category' : Category,
+  'price' : bigint,
+}
+export type Category = { 'fragrance' : null } |
+  { 'resinArt' : null } |
+  { 'soapMaking' : null } |
+  { 'candleMaking' : null };
 export type Error = { 'error' : string };
 export interface Product {
   'id' : bigint,
@@ -71,12 +83,43 @@ export interface UserProfile { 'name' : string, 'email' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface _CaffeineStorageCreateCertificateResult {
+  'method' : string,
+  'blob_hash' : string,
+}
+export interface _CaffeineStorageRefillInformation {
+  'proposed_top_up_amount' : [] | [bigint],
+}
+export interface _CaffeineStorageRefillResult {
+  'success' : [] | [boolean],
+  'topped_up_amount' : [] | [bigint],
+}
 export interface _SERVICE {
+  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
+  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+    [Array<Uint8Array>],
+    undefined
+  >,
+  '_caffeineStorageCreateCertificate' : ActorMethod<
+    [string],
+    _CaffeineStorageCreateCertificateResult
+  >,
+  '_caffeineStorageRefillCashier' : ActorMethod<
+    [[] | [_CaffeineStorageRefillInformation]],
+    _CaffeineStorageRefillResult
+  >,
+  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addProduct' : ActorMethod<
     [AddProductInput],
     { 'ok' : bigint } |
       { 'err' : Error }
+  >,
+  'adminAddProduct' : ActorMethod<
+    [AdminAddProductInput],
+    { 'ok' : Product } |
+      { 'err' : string }
   >,
   'adminCheck' : ActorMethod<[string, string], boolean>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,

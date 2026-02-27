@@ -98,13 +98,17 @@ function parseHash(hash: string): { path: string; params: Record<string, string>
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  // Simple pass-through; actual auth guard is inside the page components
   return <>{children}</>;
 }
 
 // Admin routes render without the main Header/Footer
 function isAdminRoute(path: string): boolean {
-  return path === '/admin' || path === '/admin/login';
+  return (
+    path === '/admin' ||
+    path === '/admin/login' ||
+    path === '/admin/dashboard' ||
+    path.startsWith('/admin/')
+  );
 }
 
 export default function App() {
@@ -178,8 +182,8 @@ export default function App() {
 
   const renderPage = () => {
     // Admin routes — no main header/footer
-    if (path === '/admin/login') return <AdminLoginPage />;
-    if (path === '/admin') return (
+    if (path === '/admin/login' || path === '/admin') return <AdminLoginPage />;
+    if (path === '/admin/dashboard') return (
       <AdminProtectedRoute>
         <AdminDashboardPage />
       </AdminProtectedRoute>
@@ -204,6 +208,12 @@ export default function App() {
 
     // Dynamic routes
     if (path.startsWith('/category/')) {
+      // Support both /category/slug and /category/slug/product/id
+      const categoryMatch = path.match(/^\/category\/([^/]+)\/product\/(\d+)$/);
+      if (categoryMatch) {
+        const productId = categoryMatch[2];
+        return <ProductDetailPage productId={productId} />;
+      }
       const category = path.replace('/category/', '');
       return <CategoryPage category={category} />;
     }
@@ -220,33 +230,8 @@ export default function App() {
     return <HomePage />;
   };
 
-  // Admin routes don't use the main layout
-  if (isAdminRoute(path)) {
-    return (
-      <CartContext.Provider value={{
-        items: cartItems,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        subtotal,
-        itemCount,
-      }}>
-        <WishlistContext.Provider value={{
-          wishlistItems,
-          toggleWishlist,
-          isWishlisted,
-          addToWishlist,
-          removeFromWishlist,
-        }}>
-          {renderPage()}
-        </WishlistContext.Provider>
-      </CartContext.Provider>
-    );
-  }
-
-  return (
-    <CartContext.Provider value={{
+  const contextValue = {
+    cart: {
       items: cartItems,
       addToCart,
       removeFromCart,
@@ -254,14 +239,30 @@ export default function App() {
       clearCart,
       subtotal,
       itemCount,
-    }}>
-      <WishlistContext.Provider value={{
-        wishlistItems,
-        toggleWishlist,
-        isWishlisted,
-        addToWishlist,
-        removeFromWishlist,
-      }}>
+    },
+    wishlist: {
+      wishlistItems,
+      toggleWishlist,
+      isWishlisted,
+      addToWishlist,
+      removeFromWishlist,
+    },
+  };
+
+  // Admin routes don't use the main layout
+  if (isAdminRoute(path)) {
+    return (
+      <CartContext.Provider value={contextValue.cart}>
+        <WishlistContext.Provider value={contextValue.wishlist}>
+          {renderPage()}
+        </WishlistContext.Provider>
+      </CartContext.Provider>
+    );
+  }
+
+  return (
+    <CartContext.Provider value={contextValue.cart}>
+      <WishlistContext.Provider value={contextValue.wishlist}>
         <div className="min-h-screen flex flex-col">
           <Header />
           <main className="flex-1">

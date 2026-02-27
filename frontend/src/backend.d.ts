@@ -7,20 +7,6 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface RegistrationInput {
-    password: string;
-    name: string;
-    email: string;
-}
-export interface UpdateProductInput {
-    sku: string;
-    name: string;
-    description: string;
-    stock: bigint;
-    imageUrl: string;
-    category: string;
-    price: bigint;
-}
 export interface Product {
     id: bigint;
     sku: string;
@@ -32,8 +18,38 @@ export interface Product {
     category: string;
     price: bigint;
 }
+export interface UserProfile {
+    name: string;
+    email: string;
+}
 export type Time = bigint;
 export type Rating = bigint;
+export type Error_ = {
+    __kind__: "error";
+    error: string;
+};
+export interface UpdateProductInput {
+    sku: string;
+    name: string;
+    description: string;
+    stock: bigint;
+    imageUrl: string;
+    category: string;
+    price: bigint;
+}
+export interface RegistrationInput {
+    password: string;
+    name: string;
+    email: string;
+}
+export interface AdminAddProductInput {
+    name: string;
+    description: string;
+    stock: bigint;
+    imageUrl: string;
+    category: Category;
+    price: bigint;
+}
 export interface AddProductInput {
     sku: string;
     name: string;
@@ -49,10 +65,6 @@ export interface ProductReviews {
     averageRating?: Rating;
     reviewCount: bigint;
 }
-export type Error_ = {
-    __kind__: "error";
-    error: string;
-};
 export interface ReviewInput {
     title: string;
     body: string;
@@ -67,9 +79,11 @@ export interface Review {
     timestamp: Time;
     rating: Rating;
 }
-export interface UserProfile {
-    name: string;
-    email: string;
+export enum Category {
+    fragrance = "fragrance",
+    resinArt = "resinArt",
+    soapMaking = "soapMaking",
+    candleMaking = "candleMaking"
 }
 export enum UserRole {
     admin = "admin",
@@ -83,6 +97,13 @@ export interface backendInterface {
     } | {
         __kind__: "err";
         err: Error_;
+    }>;
+    adminAddProduct(input: AdminAddProductInput): Promise<{
+        __kind__: "ok";
+        ok: Product;
+    } | {
+        __kind__: "err";
+        err: string;
     }>;
     adminCheck(email: string, password: string): Promise<boolean>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;

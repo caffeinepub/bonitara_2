@@ -1,110 +1,127 @@
 import React from 'react';
-import { ShoppingCart, Heart } from 'lucide-react';
-import { useCart, useWishlist } from '../App';
-import { StarRatingDisplay } from './StarRating';
-import { useAllProductRatings } from '../hooks/useProductReviews';
+import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { Product } from '../backend';
 
 interface ProductCardProps {
   product: Product;
+  onAddToCart?: (product: Product) => void;
+  onToggleWishlist?: (product: Product) => void;
+  isWishlisted?: boolean;
+  averageRating?: number | null;
+  reviewCount?: number;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart } = useCart();
-  const { toggleWishlist, isWishlisted } = useWishlist();
-  const { data: ratingsMap } = useAllProductRatings();
-
-  const numericId = Number(product.id);
-  const dynamicRating = ratingsMap?.get(numericId) ?? 4.5;
-  const wishlisted = isWishlisted(product.id);
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(product);
+// Maps backend category strings (both new camelCase and legacy snake_case) to URL slugs
+const categoryToSlug = (category: string): string => {
+  const map: Record<string, string> = {
+    // new camelCase values from adminAddProduct
+    candleMaking: 'candle-making',
+    soapMaking: 'soap-making',
+    fragrance: 'fragrance',
+    resinArt: 'resin-art',
+    // legacy snake_case values from migration seed data
+    candle_making: 'candle-making',
+    soap_making: 'soap-making',
+    resin_art: 'resin-art',
+    fragrances: 'fragrance',
   };
+  return map[category] ?? 'candle-making';
+};
 
-  const handleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleWishlist(product);
-  };
+// Resolves image URL — prefixes /assets/generated/ for relative paths
+const resolveImageUrl = (imageUrl: string): string => {
+  if (!imageUrl) return '/assets/generated/candle-soy-jar.dim_600x600.png';
+  if (imageUrl.startsWith('http') || imageUrl.startsWith('/')) return imageUrl;
+  return `/assets/generated/${imageUrl}`;
+};
+
+export default function ProductCard({
+  product,
+  onAddToCart,
+  onToggleWishlist,
+  isWishlisted = false,
+  averageRating,
+  reviewCount,
+}: ProductCardProps) {
+  const slug = categoryToSlug(product.category);
+  const imageUrl = resolveImageUrl(product.imageUrl);
+  const priceDisplay = (Number(product.price) / 100).toFixed(2);
 
   return (
-    <a
-      href={`#/product/${product.id}`}
-      onClick={() => window.scrollTo(0, 0)}
-      className="group block bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-    >
-      {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden bg-muted">
-        {product.imageUrl ? (
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted">
-            <ShoppingCart className="w-12 h-12 text-muted-foreground/30" />
+    <div className="group bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
+      {/* Image */}
+      <a href={`#/category/${slug}/product/${product.id}`} className="block relative overflow-hidden aspect-square bg-muted">
+        <img
+          src={imageUrl}
+          alt={product.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={e => {
+            (e.target as HTMLImageElement).src = '/assets/generated/candle-soy-jar.dim_600x600.png';
+          }}
+        />
+        {/* Wishlist button */}
+        {onToggleWishlist && (
+          <button
+            onClick={e => { e.preventDefault(); onToggleWishlist(product); }}
+            className={`absolute top-3 right-3 p-2 rounded-full shadow-md transition-colors ${
+              isWishlisted
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-background/80 text-foreground hover:bg-primary hover:text-primary-foreground'
+            }`}
+            aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
+            <Heart className="w-4 h-4" fill={isWishlisted ? 'currentColor' : 'none'} />
+          </button>
+        )}
+        {/* Out of stock badge */}
+        {Number(product.stock) === 0 && (
+          <div className="absolute bottom-0 left-0 right-0 bg-background/80 text-center py-1 text-xs font-medium text-muted-foreground">
+            Out of Stock
+          </div>
+        )}
+      </a>
+
+      {/* Info */}
+      <div className="p-4 flex flex-col flex-1">
+        <a href={`#/category/${slug}/product/${product.id}`} className="block">
+          <h3 className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors mb-1">
+            {product.name}
+          </h3>
+        </a>
+
+        {/* Rating */}
+        {averageRating != null && (
+          <div className="flex items-center gap-1 mb-2">
+            {[1, 2, 3, 4, 5].map(i => (
+              <Star
+                key={i}
+                className="w-3 h-3"
+                fill={i <= Math.round(averageRating) ? '#f59e0b' : 'none'}
+                stroke={i <= Math.round(averageRating) ? '#f59e0b' : 'currentColor'}
+              />
+            ))}
+            {reviewCount != null && reviewCount > 0 && (
+              <span className="text-xs text-muted-foreground ml-1">({reviewCount})</span>
+            )}
           </div>
         )}
 
-        {/* Wishlist button */}
-        <button
-          onClick={handleWishlist}
-          className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-all duration-200 ${
-            wishlisted
-              ? 'bg-red-500 text-white'
-              : 'bg-background/90 backdrop-blur-sm text-muted-foreground hover:text-red-500'
-          }`}
-          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-        >
-          <Heart size={15} className={wishlisted ? 'fill-current' : ''} />
-        </button>
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-3 flex-1">{product.description}</p>
 
-        {/* Add to cart overlay */}
-        <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <button
-            onClick={handleAddToCart}
-            disabled={Number(product.stock) === 0}
-            className="w-full bg-primary text-primary-foreground py-3 flex items-center justify-center gap-2 font-medium text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            <ShoppingCart size={16} />
-            {Number(product.stock) === 0 ? 'Out of Stock' : 'Add to Cart'}
-          </button>
+        <div className="flex items-center justify-between mt-auto">
+          <span className="text-lg font-bold text-primary">₹{priceDisplay}</span>
+          {onAddToCart && (
+            <button
+              onClick={() => onAddToCart(product)}
+              disabled={Number(product.stock) === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              Add
+            </button>
+          )}
         </div>
       </div>
-
-      {/* Product Info */}
-      <div className="p-4 space-y-2">
-        <p className="text-xs text-primary font-medium uppercase tracking-wider">
-          {product.category}
-        </p>
-        <h3 className="font-semibold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-          {product.name}
-        </h3>
-
-        {/* Rating */}
-        <div className="flex items-center gap-1.5">
-          <StarRatingDisplay rating={dynamicRating} size="sm" />
-          <span className="text-xs text-muted-foreground">({dynamicRating.toFixed(1)})</span>
-        </div>
-
-        {/* Price */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-foreground">
-            ₹{Number(product.price).toLocaleString('en-IN')}
-          </span>
-          <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-            Number(product.stock) > 0
-              ? 'bg-green-100 text-green-700'
-              : 'bg-red-100 text-red-700'
-          }`}>
-            {Number(product.stock) > 0 ? 'In Stock' : 'Out of Stock'}
-          </span>
-        </div>
-      </div>
-    </a>
+    </div>
   );
 }

@@ -1,91 +1,33 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Secure Admin Panel with Separate Login & Remove Admin Nav Link",
+  "title": "Fix admin panel routing so /admin opens correctly",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Remove the admin panel link from the main navigation menu so regular users cannot see or navigate to the admin panel from the header",
+      "summary": "Fix the routing configuration in App.tsx so that navigating to /admin correctly renders AdminLoginPage (or AdminDashboardPage if authenticated), ensuring the hash-based router handles /admin and all sub-routes without falling through to 404 or blank screen",
       "acceptanceCriteria": [
-        "No admin link or button is visible in the main navigation menu for any user",
-        "The Header.tsx component does not render any link pointing to the admin route"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/Header.tsx",
-          "operation": "modify",
-          "description": "Remove the admin panel navigation link from the desktop and mobile navigation menus. Ensure no links or buttons pointing to #admin or /admin remain visible in the header component for any user role."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Create a dedicated admin login page at /admin/login with hardcoded credentials (admin/admin123), storing session flag on success and showing error on failure",
-      "acceptanceCriteria": [
-        "Navigating to `/admin/login` shows a login form with username and password fields",
-        "Submitting correct credentials (admin/admin123) stores a session flag and redirects to `/admin` dashboard",
-        "Submitting incorrect credentials shows a visible error message and does not redirect",
-        "The page does not expose credentials in visible UI text"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/AdminLoginPage.tsx",
-          "operation": "create",
-          "description": "Create a new admin login page component with a form containing username and password fields. Hardcode credential validation (username: 'admin', password: 'admin123'). On successful login, store an admin session flag in sessionStorage (key: 'adminSession', value: 'true') and redirect to #admin using window.location.hash. On failed login, display an error message below the form. Use shadcn/ui form components (Input, Button, Label) for styling consistency."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Protect the admin dashboard route with an authentication guard that checks for admin session flag and provides logout functionality",
-      "acceptanceCriteria": [
-        "Visiting `/admin` without a valid admin session redirects to `/admin/login`",
-        "Visiting `/admin` with a valid admin session renders the admin dashboard",
-        "Clicking logout on the admin dashboard clears the session and redirects to `/admin/login`",
-        "Regular users who are logged in via Internet Identity cannot access `/admin` without the admin session flag"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/AdminProtectedRoute.tsx",
-          "operation": "create",
-          "description": "Create a route guard component that checks sessionStorage for the 'adminSession' flag. If not present or not equal to 'true', redirect to #admin/login using window.location.hash. If present, render children (the admin dashboard). This guard is independent of Internet Identity authentication."
-        },
-        {
-          "path": "frontend/src/pages/AdminDashboardPage.tsx",
-          "operation": "modify",
-          "description": "Add a logout button to the admin dashboard that clears the 'adminSession' flag from sessionStorage and redirects to #admin/login. Position the logout button prominently in the dashboard header or top-right corner. Use shadcn/ui Button component for consistency."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Update the main site Sign In page to include both sign-in and sign-up options using Internet Identity",
-      "acceptanceCriteria": [
-        "The Sign In page shows a clear 'Sign In' section using Internet Identity",
-        "The Sign In page also shows a 'Sign Up' or 'New User? Register' option that initiates Internet Identity registration",
-        "Both sign-in and sign-up flows use Internet Identity (no manual username/password for regular users)",
-        "After successful authentication, users are redirected to their profile page"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/LoginPage.tsx",
-          "operation": "modify",
-          "description": "Remove the email/password authentication tab and form. Keep only the Internet Identity authentication section. Add clear messaging that explains Internet Identity is the authentication method for regular users. Include both a 'Sign In' button and a 'New User? Sign Up' button that both trigger the Internet Identity login flow (which handles both sign-in and registration). After successful authentication, redirect to #profile. Remove any references to useManualAuth hook."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Update the hash-based router to include /admin/login route and ensure /admin is guarded by admin session check",
-      "acceptanceCriteria": [
-        "The router handles the `/admin/login` hash route and renders the AdminLoginPage component",
-        "The router handles the `/admin` hash route and renders AdminDashboardPage only if admin session is active, otherwise redirects to `/admin/login`"
+        "Navigating to /#/admin (or /admin depending on router mode) opens the AdminLoginPage without a blank screen or 404.",
+        "After entering valid admin credentials on AdminLoginPage, the user is redirected to AdminDashboardPage.",
+        "AdminProtectedRoute correctly guards the dashboard and redirects unauthenticated users to the admin login page.",
+        "The admin route does not render the shared Header and Footer components, consistent with the existing exclusion logic in App.tsx.",
+        "All other existing routes continue to work correctly after the fix."
       ],
       "file_operations": [
         {
           "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add a route case for 'admin/login' that renders the AdminLoginPage component. Update the existing 'admin' route case to wrap AdminDashboardPage with the AdminProtectedRoute component. Import both AdminLoginPage and AdminProtectedRoute at the top of the file. Ensure the admin routes are evaluated before other catch-all routes in the switch/case structure."
+          "description": "Fix the hash-based router configuration to correctly handle /admin and /admin/dashboard routes. Ensure the route definitions include explicit Routes for /admin (pointing to AdminLoginPage) and /admin/dashboard (wrapped with AdminProtectedRoute pointing to AdminDashboardPage). Update the conditional logic that determines whether to show Header and Footer so that it excludes all /admin/* paths. Verify that the router's path matching correctly handles both top-level /admin and nested /admin/dashboard without falling through to the catch-all 404 route."
+        },
+        {
+          "path": "frontend/src/components/AdminProtectedRoute.tsx",
+          "operation": "modify",
+          "description": "Review and ensure the AdminProtectedRoute component correctly checks sessionStorage for the admin session key and redirects unauthenticated users to /admin (the admin login page). Verify the redirect logic uses the correct hash-based navigation (e.g., window.location.hash = '#/admin') to match the router mode used in App.tsx. Ensure the component returns null or a loading spinner while checking the session, then renders children only if authenticated."
+        },
+        {
+          "path": "frontend/src/pages/AdminLoginPage.tsx",
+          "operation": "modify",
+          "description": "Verify that after successful admin login (when credentials match and sessionStorage is set), the page redirects to /#/admin/dashboard using hash-based navigation (e.g., window.location.hash = '#/admin/dashboard'). Ensure the redirect logic does not conflict with the router and that the admin session flag is persisted correctly in sessionStorage before navigation occurs."
         }
       ]
     }

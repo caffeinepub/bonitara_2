@@ -1,534 +1,731 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../hooks/useActor';
-import { Product, AddProductInput } from '../backend';
+import { Category, Product } from '../backend';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
 import {
-  Package, ShoppingBag, MessageSquare, LayoutDashboard, LogOut,
-  Plus, Search, RefreshCw, Edit2, Trash2, Eye, EyeOff, X,
+  Package,
+  ShoppingCart,
+  MessageSquare,
+  BarChart3,
+  Plus,
+  Pencil,
+  Trash2,
+  Eye,
+  LogOut,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-const CATEGORIES = ['Soap Making', 'Candle Making', 'Resin Art', 'Fragrance'];
+// ─── helpers ────────────────────────────────────────────────────────────────
 
-const emptyForm = (): AddProductInput => ({
+const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
+  { value: Category.candleMaking, label: 'Candle Making' },
+  { value: Category.soapMaking, label: 'Soap Making' },
+  { value: Category.fragrance, label: 'Fragrance' },
+  { value: Category.resinArt, label: 'Resin Art' },
+];
+
+const categoryLabel = (cat: string) => {
+  const map: Record<string, string> = {
+    candleMaking: 'Candle Making',
+    soapMaking: 'Soap Making',
+    fragrance: 'Fragrance',
+    resinArt: 'Resin Art',
+    candle_making: 'Candle Making',
+    soap_making: 'Soap Making',
+    resin_art: 'Resin Art',
+    fragrances: 'Fragrance',
+  };
+  return map[cat] ?? cat;
+};
+
+const resolveImageUrl = (url: string) => {
+  if (!url) return '/assets/generated/candle-soy-jar.dim_600x600.png';
+  if (url.startsWith('http') || url.startsWith('/')) return url;
+  return `/assets/generated/${url}`;
+};
+
+// ─── types ───────────────────────────────────────────────────────────────────
+
+interface AddProductForm {
+  name: string;
+  description: string;
+  price: string;
+  category: string; // use string so empty string is valid for the form state
+  stock: string;
+  imageUrl: string;
+}
+
+interface AddProductFormErrors {
+  name?: string;
+  price?: string;
+  category?: string;
+}
+
+interface EditProductForm {
+  name: string;
+  description: string;
+  price: string;
+  sku: string;
+  category: string;
+  stock: string;
+  imageUrl: string;
+}
+
+const emptyAddForm = (): AddProductForm => ({
   name: '',
-  sku: '',
   description: '',
-  price: 0n,
-  stock: 0n,
+  price: '',
   category: '',
+  stock: '',
   imageUrl: '',
 });
 
-// ── StatCard ──────────────────────────────────────────────────────────────────
-function StatCard({ label, value, icon }: { label: string; value: string | number; icon: React.ReactNode }) {
-  return (
-    <div className="bg-white rounded-xl border border-stone-200 p-5 flex items-center gap-4 shadow-sm">
-      <div className="p-3 bg-amber-50 rounded-lg text-amber-700">{icon}</div>
-      <div>
-        <p className="text-xs text-stone-500 uppercase tracking-wide">{label}</p>
-        <p className="text-2xl font-bold text-stone-800">{value}</p>
-      </div>
-    </div>
-  );
-}
+// ─── component ───────────────────────────────────────────────────────────────
 
-// ── ProductForm (top-level component — MUST be outside AdminDashboardPage) ────
-interface ProductFormProps {
-  title: string;
-  form: AddProductInput;
-  formError: string;
-  isMutating: boolean;
-  isEditing: boolean;
-  onClose: () => void;
-  onSubmit: () => void;
-  onFormChange: (updater: (prev: AddProductInput) => AddProductInput) => void;
-}
-
-function ProductForm({
-  title,
-  form,
-  formError,
-  isMutating,
-  isEditing,
-  onClose,
-  onSubmit,
-  onFormChange,
-}: ProductFormProps) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 pt-16">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-stone-200 p-6 my-4">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-bold text-stone-800">{title}</h2>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-stone-100 text-stone-500">
-            <X size={20} />
-          </button>
-        </div>
-
-        {formError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {formError}
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2 sm:col-span-1">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Name *</label>
-            <input
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              placeholder="Product name"
-              value={form.name}
-              onChange={e => onFormChange(f => ({ ...f, name: e.target.value }))}
-            />
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <label className="block text-sm font-medium text-stone-700 mb-1">SKU *</label>
-            <input
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              placeholder="SKU-001"
-              value={form.sku}
-              onChange={e => onFormChange(f => ({ ...f, sku: e.target.value }))}
-            />
-          </div>
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
-            <textarea
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white resize-none"
-              rows={3}
-              placeholder="Product description..."
-              value={form.description}
-              onChange={e => onFormChange(f => ({ ...f, description: e.target.value }))}
-            />
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Price (₹) *</label>
-            <input
-              type="number"
-              min={0}
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              placeholder="0"
-              value={Number(form.price)}
-              onChange={e => onFormChange(f => ({ ...f, price: BigInt(Math.max(0, parseInt(e.target.value) || 0)) }))}
-            />
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Stock *</label>
-            <input
-              type="number"
-              min={0}
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              placeholder="0"
-              value={Number(form.stock)}
-              onChange={e => onFormChange(f => ({ ...f, stock: BigInt(Math.max(0, parseInt(e.target.value) || 0)) }))}
-            />
-          </div>
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Category *</label>
-            <select
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              value={form.category}
-              onChange={e => onFormChange(f => ({ ...f, category: e.target.value }))}
-            >
-              <option value="">Select category</option>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-stone-700 mb-1">Image URL</label>
-            <input
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              placeholder="https://..."
-              value={form.imageUrl}
-              onChange={e => onFormChange(f => ({ ...f, imageUrl: e.target.value }))}
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={onSubmit}
-            disabled={isMutating}
-            className="flex-1 bg-amber-700 hover:bg-amber-800 disabled:opacity-60 text-white font-medium py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
-          >
-            {isMutating && <RefreshCw size={14} className="animate-spin" />}
-            {isEditing ? 'Save Changes' : 'Add Product'}
-          </button>
-          <button
-            onClick={onClose}
-            disabled={isMutating}
-            className="flex-1 border border-stone-300 hover:bg-stone-50 text-stone-700 font-medium py-2.5 rounded-lg text-sm transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── main component ────────────────────────────────────────────────────────────
 export default function AdminDashboardPage() {
-  const { actor, isFetching: actorFetching } = useActor();
+  const { actor } = useActor();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'inquiries'>('overview');
-  const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [addingProduct, setAddingProduct] = useState(false);
+  // ── state ──
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState<AddProductForm>(emptyAddForm());
+  const [addErrors, setAddErrors] = useState<AddProductFormErrors>({});
+
+  const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [form, setForm] = useState<AddProductInput>(emptyForm());
-  const [formError, setFormError] = useState('');
+  const [editForm, setEditForm] = useState<EditProductForm>({
+    name: '', description: '', price: '', sku: '', category: '', stock: '', imageUrl: '',
+  });
 
-  // ── admin logout ──────────────────────────────────────────────────────────
-  const handleAdminLogout = () => {
-    sessionStorage.removeItem('adminSession');
-    queryClient.clear();
-    window.location.hash = '/admin/login';
-  };
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingProductId, setDeletingProductId] = useState<bigint | null>(null);
 
-  // ── queries ──────────────────────────────────────────────────────────────
-  const { data: products = [], isLoading, refetch } = useQuery<Product[]>({
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // ── queries ──
+  const { actor: actorForQuery, isFetching: actorFetching } = useActor();
+
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ['adminProducts'],
     queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllProductsAdmin();
+      if (!actorForQuery) return [];
+      return actorForQuery.getAllProductsAdmin();
     },
-    enabled: !!actor && !actorFetching,
+    enabled: !!actorForQuery && !actorFetching,
   });
 
-  // ── mutations ─────────────────────────────────────────────────────────────
-  const addMutation = useMutation({
-    mutationFn: async (input: AddProductInput) => {
-      if (!actor) throw new Error('No actor');
-      const result = await actor.addProduct(input);
-      if (result.__kind__ === 'err') {
-        throw new Error(result.err.error ?? 'Failed to add product');
-      }
+  // ── mutations ──
+
+  const addProductMutation = useMutation({
+    mutationFn: async (form: AddProductForm) => {
+      if (!actor) throw new Error('Actor not available');
+      const result = await actor.adminAddProduct({
+        name: form.name,
+        description: form.description,
+        price: BigInt(Math.round(parseFloat(form.price) * 100)),
+        category: form.category as Category,
+        stock: BigInt(parseInt(form.stock, 10) || 0),
+        imageUrl: form.imageUrl || '',
+      });
+      if (result.__kind__ === 'err') throw new Error(result.err);
       return result.ok;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      setAddingProduct(false);
-      setForm(emptyForm());
-      setFormError('');
+      toast.success('Product added successfully!');
+      setShowAddModal(false);
+      setAddForm(emptyAddForm());
+      setAddErrors({});
     },
-    onError: (e: any) => setFormError(e.message ?? 'Failed to add product'),
+    onError: (err: Error) => {
+      toast.error(`Failed to add product: ${err.message}`);
+    },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, input }: { id: bigint; input: AddProductInput }) => {
-      if (!actor) throw new Error('No actor');
-      const result = await actor.updateProduct(id, input);
-      if (result.__kind__ === 'err') {
-        throw new Error(result.err.error ?? 'Failed to update product');
-      }
+  const editProductMutation = useMutation({
+    mutationFn: async ({ id, form }: { id: bigint; form: EditProductForm }) => {
+      if (!actor) throw new Error('Actor not available');
+      const result = await actor.updateProduct(id, {
+        name: form.name,
+        description: form.description,
+        price: BigInt(Math.round(parseFloat(form.price) * 100)),
+        sku: form.sku,
+        stock: BigInt(parseInt(form.stock, 10) || 0),
+        category: form.category,
+        imageUrl: form.imageUrl,
+      });
+      if (result.__kind__ === 'err') throw new Error(result.err.error);
       return result.ok;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product updated successfully!');
+      setShowEditModal(false);
       setEditingProduct(null);
-      setForm(emptyForm());
-      setFormError('');
     },
-    onError: (e: any) => setFormError(e.message ?? 'Failed to update product'),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: bigint) => {
-      if (!actor) throw new Error('No actor');
-      const result = await actor.deleteProduct(id);
-      if (result.__kind__ === 'err') {
-        throw new Error(result.err.error ?? 'Failed to delete product');
-      }
-      return result.ok;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+    onError: (err: Error) => {
+      toast.error(`Failed to update product: ${err.message}`);
     },
   });
 
   const visibilityMutation = useMutation({
     mutationFn: async ({ id, visible }: { id: bigint; visible: boolean }) => {
-      if (!actor) throw new Error('No actor');
+      if (!actor) throw new Error('Actor not available');
       const result = await actor.updateProductVisibility(id, visible);
-      if (result.__kind__ === 'err') {
-        throw new Error(result.err.error ?? 'Failed to update visibility');
-      }
+      if (result.__kind__ === 'err') throw new Error(result.err.error);
       return result.ok;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
+    onError: (err: Error) => {
+      toast.error(`Failed to update visibility: ${err.message}`);
+    },
   });
 
-  // ── derived ───────────────────────────────────────────────────────────────
-  const filtered = products.filter(p => {
-    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
-    const matchCat = !categoryFilter || p.category === categoryFilter;
-    return matchSearch && matchCat;
+  const deleteProductMutation = useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      const result = await actor.deleteProduct(id);
+      if (result.__kind__ === 'err') throw new Error(result.err.error);
+      return result.ok;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product deleted successfully!');
+      setShowDeleteDialog(false);
+      setDeletingProductId(null);
+    },
+    onError: (err: Error) => {
+      toast.error(`Failed to delete product: ${err.message}`);
+    },
   });
 
-  const visibleProducts = products.filter(p => p.isVisible);
-  const totalStock = products.reduce((s, p) => s + Number(p.stock), 0);
+  // ── validation ──
 
-  // ── form helpers ──────────────────────────────────────────────────────────
-  const openAdd = () => {
-    setForm(emptyForm());
-    setFormError('');
-    setEditingProduct(null);
-    setAddingProduct(true);
+  const validateAddForm = (): boolean => {
+    const errors: AddProductFormErrors = {};
+    if (!addForm.name.trim()) errors.name = 'Name is required';
+    if (!addForm.price || isNaN(parseFloat(addForm.price)) || parseFloat(addForm.price) <= 0)
+      errors.price = 'Valid price is required';
+    if (!addForm.category) errors.category = 'Category is required';
+    setAddErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
-  const openEdit = (p: Product) => {
-    setForm({
-      name: p.name,
-      sku: p.sku,
-      description: p.description,
-      price: p.price,
-      stock: p.stock,
-      category: p.category,
-      imageUrl: p.imageUrl,
+  // ── handlers ──
+
+  const handleAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateAddForm()) return;
+    addProductMutation.mutate(addForm);
+  };
+
+  const handleEditOpen = (product: Product) => {
+    setEditingProduct(product);
+    setEditForm({
+      name: product.name,
+      description: product.description,
+      price: (Number(product.price) / 100).toFixed(2),
+      sku: product.sku,
+      category: product.category,
+      stock: product.stock.toString(),
+      imageUrl: product.imageUrl,
     });
-    setFormError('');
-    setAddingProduct(false);
-    setEditingProduct(p);
+    setShowEditModal(true);
   };
 
-  const closeForm = () => {
-    setAddingProduct(false);
-    setEditingProduct(null);
-    setForm(emptyForm());
-    setFormError('');
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    editProductMutation.mutate({ id: editingProduct.id, form: editForm });
   };
 
-  const handleSubmit = () => {
-    if (!form.name.trim() || !form.sku.trim() || !form.category) {
-      setFormError('Name, SKU, and Category are required.');
-      return;
-    }
-    setFormError('');
-    if (editingProduct) {
-      updateMutation.mutate({ id: editingProduct.id, input: form });
-    } else {
-      addMutation.mutate(form);
+  const handleDeleteConfirm = () => {
+    if (deletingProductId !== null) {
+      deleteProductMutation.mutate(deletingProductId);
     }
   };
 
-  const isMutating = addMutation.isPending || updateMutation.isPending;
-  const showForm = addingProduct || editingProduct !== null;
+  const handleLogout = () => {
+    sessionStorage.removeItem('adminSession');
+    window.location.hash = '/admin/login';
+  };
 
-  // ── render ────────────────────────────────────────────────────────────────
+  // ── stats ──
+  const totalProducts = products.length;
+  const visibleProducts = products.filter(p => p.isVisible).length;
+  const totalStock = products.reduce((sum, p) => sum + Number(p.stock), 0);
+
+  // ── render ──
+
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <LayoutDashboard size={22} className="text-amber-700" />
-          <span className="font-bold text-stone-800 text-lg">Bonitara Admin</span>
+      <header className="border-b border-border bg-card sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/assets/generated/bonitara-logo.dim_400x120.png" alt="Bonitara" className="h-8 object-contain" />
+            <span className="text-sm font-medium text-muted-foreground border-l border-border pl-3">Admin</span>
+          </div>
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
+            <LogOut className="w-4 h-4" />
+            Logout
+          </Button>
         </div>
-        <button
-          onClick={handleAdminLogout}
-          className="flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900 transition-colors"
-        >
-          <LogOut size={16} />
-          Sign Out
-        </button>
       </header>
 
-      {/* Bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 z-40 flex">
-        {(['overview', 'products', 'orders', 'inquiries'] as const).map(tab => {
-          const icons = {
-            overview: <LayoutDashboard size={20} />,
-            products: <Package size={20} />,
-            orders: <ShoppingBag size={20} />,
-            inquiries: <MessageSquare size={20} />,
-          };
-          return (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${activeTab === tab ? 'text-amber-700' : 'text-stone-500 hover:text-stone-700'}`}
-            >
-              {icons[tab]}
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          );
-        })}
-      </nav>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-8">
+            <TabsTrigger value="overview" className="gap-2">
+              <BarChart3 className="w-4 h-4" /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="products" className="gap-2">
+              <Package className="w-4 h-4" /> Products
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="gap-2">
+              <ShoppingCart className="w-4 h-4" /> Orders
+            </TabsTrigger>
+            <TabsTrigger value="inquiries" className="gap-2">
+              <MessageSquare className="w-4 h-4" /> Inquiries
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Main content */}
-      <main className="pb-24 px-4 pt-6 max-w-4xl mx-auto">
+          {/* ── Overview ── */}
+          <TabsContent value="overview">
+            <h2 className="text-2xl font-semibold mb-6">Dashboard Overview</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <StatCard icon={<Package className="w-6 h-6" />} label="Total Products" value={totalProducts} />
+              <StatCard icon={<Eye className="w-6 h-6" />} label="Visible Products" value={visibleProducts} />
+              <StatCard icon={<ShoppingCart className="w-6 h-6" />} label="Total Stock Units" value={totalStock} />
+            </div>
+          </TabsContent>
 
-        {/* Overview tab */}
-        {activeTab === 'overview' && (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-stone-800">Overview</h1>
-            {isLoading ? (
-              <div className="grid grid-cols-2 gap-4">
-                {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-stone-200 rounded-xl animate-pulse" />)}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                <StatCard label="Total Products" value={products.length} icon={<Package size={20} />} />
-                <StatCard label="Visible" value={visibleProducts.length} icon={<Eye size={20} />} />
-                <StatCard label="Total Stock" value={totalStock} icon={<ShoppingBag size={20} />} />
-                <StatCard label="Categories" value={CATEGORIES.length} icon={<LayoutDashboard size={20} />} />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Products tab */}
-        {activeTab === 'products' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-stone-800">Products</h1>
-              <button
-                onClick={openAdd}
-                className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          {/* ── Products ── */}
+          <TabsContent value="products">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold">Product Management</h2>
+              <Button
+                onClick={() => { setAddForm(emptyAddForm()); setAddErrors({}); setShowAddModal(true); }}
+                className="gap-2"
               >
-                <Plus size={16} />
-                Add Product
-              </button>
+                <Plus className="w-4 h-4" /> Add New Product
+              </Button>
             </div>
 
-            {/* Filters */}
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-                <input
-                  className="w-full pl-9 pr-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-                  placeholder="Search by name or SKU..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
+            {productsLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground">
+                <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>No products yet. Add your first product!</p>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Image</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Stock</TableHead>
+                      <TableHead>Visible</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.map(product => (
+                      <TableRow key={product.id.toString()}>
+                        <TableCell>
+                          <img
+                            src={resolveImageUrl(product.imageUrl)}
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded"
+                            onError={e => {
+                              (e.target as HTMLImageElement).src = '/assets/generated/candle-soy-jar.dim_600x600.png';
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{categoryLabel(product.category)}</Badge>
+                        </TableCell>
+                        <TableCell>₹{(Number(product.price) / 100).toFixed(2)}</TableCell>
+                        <TableCell>{product.stock.toString()}</TableCell>
+                        <TableCell>
+                          <Switch
+                            checked={product.isVisible}
+                            onCheckedChange={v => visibilityMutation.mutate({ id: product.id, visible: v })}
+                          />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => handleEditOpen(product)}>
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => { setDeletingProductId(product.id); setShowDeleteDialog(true); }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ── Orders ── */}
+          <TabsContent value="orders">
+            <h2 className="text-2xl font-semibold mb-6">Orders</h2>
+            <div className="text-center py-16 text-muted-foreground">
+              <ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p>No orders yet.</p>
+            </div>
+          </TabsContent>
+
+          {/* ── Inquiries ── */}
+          <TabsContent value="inquiries">
+            <h2 className="text-2xl font-semibold mb-6">Inquiries</h2>
+            <div className="text-center py-16 text-muted-foreground">
+              <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p>No inquiries yet.</p>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* ── Add Product Modal ── */}
+      <Dialog
+        open={showAddModal}
+        onOpenChange={open => { if (!addProductMutation.isPending) setShowAddModal(open); }}
+      >
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Product</DialogTitle>
+            <DialogDescription>Fill in the details below to add a new product to the catalog.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddSubmit} className="space-y-4 mt-2">
+            {/* Name */}
+            <div className="space-y-1">
+              <Label htmlFor="add-name">
+                Product Name <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="add-name"
+                value={addForm.name}
+                onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. Soy Wax Candle Kit"
+              />
+              {addErrors.name && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />{addErrors.name}
+                </p>
+              )}
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1">
+              <Label htmlFor="add-desc">Description</Label>
+              <Textarea
+                id="add-desc"
+                value={addForm.description}
+                onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))}
+                placeholder="Product description..."
+                rows={3}
+              />
+            </div>
+
+            {/* Price */}
+            <div className="space-y-1">
+              <Label htmlFor="add-price">
+                Price (₹) <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="add-price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={addForm.price}
+                onChange={e => setAddForm(f => ({ ...f, price: e.target.value }))}
+                placeholder="e.g. 499.00"
+              />
+              {addErrors.price && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />{addErrors.price}
+                </p>
+              )}
+            </div>
+
+            {/* Category */}
+            <div className="space-y-1">
+              <Label>
+                Category <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={addForm.category}
+                onValueChange={v => setAddForm(f => ({ ...f, category: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORY_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {addErrors.category && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />{addErrors.category}
+                </p>
+              )}
+            </div>
+
+            {/* Stock */}
+            <div className="space-y-1">
+              <Label htmlFor="add-stock">Stock Quantity</Label>
+              <Input
+                id="add-stock"
+                type="number"
+                min="0"
+                step="1"
+                value={addForm.stock}
+                onChange={e => setAddForm(f => ({ ...f, stock: e.target.value }))}
+                placeholder="e.g. 50"
+              />
+            </div>
+
+            {/* Image URL */}
+            <div className="space-y-1">
+              <Label htmlFor="add-image">Image URL</Label>
+              <Input
+                id="add-image"
+                value={addForm.imageUrl}
+                onChange={e => setAddForm(f => ({ ...f, imageUrl: e.target.value }))}
+                placeholder="e.g. /assets/generated/candle-soy-jar.dim_600x600.png"
+              />
+              <p className="text-xs text-muted-foreground">Leave blank to use a default image.</p>
+            </div>
+
+            {/* Preview */}
+            {addForm.imageUrl && (
+              <div className="rounded-lg overflow-hidden border border-border h-32 flex items-center justify-center bg-muted">
+                <img
+                  src={resolveImageUrl(addForm.imageUrl)}
+                  alt="Preview"
+                  className="h-full w-full object-cover"
+                  onError={e => {
+                    (e.target as HTMLImageElement).src = '/assets/generated/candle-soy-jar.dim_600x600.png';
+                  }}
                 />
               </div>
-              <select
-                className="border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-                value={categoryFilter}
-                onChange={e => setCategoryFilter(e.target.value)}
-              >
-                <option value="">All</option>
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <button
-                onClick={() => refetch()}
-                className="p-2 border border-stone-300 rounded-lg hover:bg-stone-100 text-stone-600 transition-colors"
-                title="Refresh"
-              >
-                <RefreshCw size={16} />
-              </button>
-            </div>
+            )}
 
-            {/* Product list */}
-            {isLoading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => <div key={i} className="h-20 bg-stone-200 rounded-xl animate-pulse" />)}
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="text-center py-16 text-stone-500">
-                <Package size={40} className="mx-auto mb-3 opacity-30" />
-                <p>No products found.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filtered.map(p => (
-                  <div
-                    key={p.id.toString()}
-                    className={`bg-white rounded-xl border border-stone-200 p-4 flex gap-3 shadow-sm ${!p.isVisible ? 'opacity-60' : ''}`}
-                  >
-                    {p.imageUrl ? (
-                      <img src={p.imageUrl} alt={p.name} className="w-16 h-16 object-cover rounded-lg shrink-0 bg-stone-100" />
-                    ) : (
-                      <div className="w-16 h-16 bg-stone-100 rounded-lg shrink-0 flex items-center justify-center text-stone-400">
-                        <Package size={24} />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="font-semibold text-stone-800 text-sm truncate">{p.name}</p>
-                          <p className="text-xs text-stone-500 mt-0.5">{p.sku} · {p.category}</p>
-                          <p className="text-xs text-stone-500 mt-0.5">₹{Number(p.price).toLocaleString()} · Stock: {Number(p.stock)}</p>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            onClick={() => visibilityMutation.mutate({ id: p.id, visible: !p.isVisible })}
-                            disabled={visibilityMutation.isPending}
-                            className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 transition-colors"
-                            title={p.isVisible ? 'Hide' : 'Show'}
-                          >
-                            {p.isVisible ? <Eye size={15} /> : <EyeOff size={15} />}
-                          </button>
-                          <button
-                            onClick={() => openEdit(p)}
-                            className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 transition-colors"
-                            title="Edit"
-                          >
-                            <Edit2 size={15} />
-                          </button>
-                          <button
-                            onClick={() => deleteMutation.mutate(p.id)}
-                            disabled={deleteMutation.isPending}
-                            className="p-1.5 rounded-lg hover:bg-red-50 text-stone-500 hover:text-red-600 transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </div>
-                      {!p.isVisible && (
-                        <span className="inline-block mt-1 text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">Hidden</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowAddModal(false)}
+                disabled={addProductMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={addProductMutation.isPending} className="gap-2">
+                {addProductMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                {addProductMutation.isPending ? 'Adding…' : 'Add Product'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Edit Product Modal ── */}
+      <Dialog
+        open={showEditModal}
+        onOpenChange={open => { if (!editProductMutation.isPending) setShowEditModal(open); }}
+      >
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Product</DialogTitle>
+            <DialogDescription>Update the product details below.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4 mt-2">
+            <div className="space-y-1">
+              <Label htmlFor="edit-name">Product Name</Label>
+              <Input
+                id="edit-name"
+                value={editForm.name}
+                onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-desc">Description</Label>
+              <Textarea
+                id="edit-desc"
+                value={editForm.description}
+                onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                rows={3}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-price">Price (₹)</Label>
+              <Input
+                id="edit-price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={editForm.price}
+                onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-sku">SKU</Label>
+              <Input
+                id="edit-sku"
+                value={editForm.sku}
+                onChange={e => setEditForm(f => ({ ...f, sku: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Category</Label>
+              <Select
+                value={editForm.category}
+                onValueChange={v => setEditForm(f => ({ ...f, category: v }))}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORY_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                  <SelectItem value="candle_making">Candle Making (legacy)</SelectItem>
+                  <SelectItem value="soap_making">Soap Making (legacy)</SelectItem>
+                  <SelectItem value="resin_art">Resin Art (legacy)</SelectItem>
+                  <SelectItem value="fragrances">Fragrance (legacy)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-stock">Stock Quantity</Label>
+              <Input
+                id="edit-stock"
+                type="number"
+                min="0"
+                step="1"
+                value={editForm.stock}
+                onChange={e => setEditForm(f => ({ ...f, stock: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-image">Image URL</Label>
+              <Input
+                id="edit-image"
+                value={editForm.imageUrl}
+                onChange={e => setEditForm(f => ({ ...f, imageUrl: e.target.value }))}
+              />
+            </div>
+            {editForm.imageUrl && (
+              <div className="rounded-lg overflow-hidden border border-border h-32 flex items-center justify-center bg-muted">
+                <img
+                  src={resolveImageUrl(editForm.imageUrl)}
+                  alt="Preview"
+                  className="h-full w-full object-cover"
+                  onError={e => {
+                    (e.target as HTMLImageElement).src = '/assets/generated/candle-soy-jar.dim_600x600.png';
+                  }}
+                />
               </div>
             )}
-          </div>
-        )}
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowEditModal(false)}
+                disabled={editProductMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={editProductMutation.isPending} className="gap-2">
+                {editProductMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                {editProductMutation.isPending ? 'Saving…' : 'Save Changes'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-        {/* Orders tab */}
-        {activeTab === 'orders' && (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold text-stone-800">Orders</h1>
-            <div className="text-center py-16 text-stone-500">
-              <ShoppingBag size={40} className="mx-auto mb-3 opacity-30" />
-              <p>Order management coming soon.</p>
-            </div>
-          </div>
-        )}
+      {/* ── Delete Confirmation ── */}
+      <Dialog
+        open={showDeleteDialog}
+        onOpenChange={open => { if (!deleteProductMutation.isPending) setShowDeleteDialog(open); }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete Product</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this product? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleteProductMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={deleteProductMutation.isPending}
+              className="gap-2"
+            >
+              {deleteProductMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              {deleteProductMutation.isPending ? 'Deleting…' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
 
-        {/* Inquiries tab */}
-        {activeTab === 'inquiries' && (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold text-stone-800">Inquiries</h1>
-            <div className="text-center py-16 text-stone-500">
-              <MessageSquare size={40} className="mx-auto mb-3 opacity-30" />
-              <p>Inquiry management coming soon.</p>
-            </div>
-          </div>
-        )}
-      </main>
+// ─── StatCard ────────────────────────────────────────────────────────────────
 
-      {/* Product Form Modal */}
-      {showForm && (
-        <ProductForm
-          title={editingProduct ? 'Edit Product' : 'Add New Product'}
-          form={form}
-          formError={formError}
-          isMutating={isMutating}
-          isEditing={editingProduct !== null}
-          onClose={closeForm}
-          onSubmit={handleSubmit}
-          onFormChange={setForm}
-        />
-      )}
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+  return (
+    <div className="bg-card border border-border rounded-xl p-6 flex items-center gap-4">
+      <div className="p-3 bg-primary/10 rounded-lg text-primary">{icon}</div>
+      <div>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="text-2xl font-bold">{value.toLocaleString()}</p>
+      </div>
     </div>
   );
 }

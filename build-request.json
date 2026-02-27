@@ -1,120 +1,40 @@
 {
   "kind": "build_request",
-  "title": "Secure Admin Panel with Separate Login & Remove Admin Nav Link",
-  "projectName": "Bonitara Store",
+  "title": "Fix admin panel routing so /admin opens correctly",
+  "projectName": "BONITARA",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Remove the admin panel link from the main navigation menu (Header.tsx) so regular users cannot see or navigate to the admin panel from the header.",
+      "text": "Fix the routing configuration in App.tsx so that navigating to the /admin route correctly renders the AdminLoginPage (or AdminDashboardPage if already authenticated). The hash-based router must handle the /admin path and all sub-routes (e.g., /admin/dashboard) without falling through to a 404 or blank screen.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "Remove admin link from menu"
+          "Admin panel not opening fix it please",
+          "Yes fix it"
         ]
       },
       "acceptanceCriteria": [
-        "No admin link or button is visible in the main navigation menu for any user",
-        "The Header.tsx component does not render any link pointing to the admin route"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Create a dedicated admin login page at the route `/admin/login` with a manual username/password form. Hardcode the credentials as username: `admin`, password: `admin123`. On successful login, store an admin session flag (e.g., in localStorage or sessionStorage) and redirect to `/admin`. On failed login, display an error message.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4",
-          "msg-6",
-          "msg-8"
-        ],
-        "quotes": [
-          "give me manual login when click on sign in",
-          "Single hardcoded credentials (admin / admin123)",
-          "Admin panel at /admin — protected by a manual login page"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Navigating to `/admin/login` shows a login form with username and password fields",
-        "Submitting correct credentials (admin/admin123) stores a session flag and redirects to `/admin` dashboard",
-        "Submitting incorrect credentials shows a visible error message and does not redirect",
-        "The page does not expose credentials in visible UI text"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Protect the admin dashboard route (`/admin`) with an admin authentication guard. If the admin session flag is not present, redirect the user to `/admin/login` instead of rendering the admin dashboard. Provide a logout button on the admin dashboard that clears the session flag and redirects to `/admin/login`.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4",
-          "msg-8"
-        ],
-        "quotes": [
-          "where is security?",
-          "No way for regular users to stumble into the admin panel"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Visiting `/admin` without a valid admin session redirects to `/admin/login`",
-        "Visiting `/admin` with a valid admin session renders the admin dashboard",
-        "Clicking logout on the admin dashboard clears the session and redirects to `/admin/login`",
-        "Regular users who are logged in via Internet Identity cannot access `/admin` without the admin session flag"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Update the main site Sign In page (LoginPage.tsx) to include both a sign-in and a sign-up option using Internet Identity. The page should clearly present Internet Identity login as the authentication method for regular users, with a visible option to register/sign up for new users on the same page.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4",
-          "msg-8"
-        ],
-        "quotes": [
-          "signup option as well inside sign in page",
-          "Regular users sign in via Internet Identity (passkeys/Google/Apple) with a sign-up option on the same page"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The Sign In page shows a clear 'Sign In' section using Internet Identity",
-        "The Sign In page also shows a 'Sign Up' or 'New User? Register' option that initiates Internet Identity registration",
-        "Both sign-in and sign-up flows use Internet Identity (no manual username/password for regular users)",
-        "After successful authentication, users are redirected to their profile page"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Update the hash-based router in App.tsx to include routes for `/admin/login` (renders the new AdminLoginPage) and ensure `/admin` is guarded by the admin session check, rendering AdminDashboardPage only when authenticated as admin.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-8"
-        ],
-        "quotes": [
-          "Admin panel at /admin — protected by a manual login page (username: admin, password: admin123)"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The router handles the `/admin/login` hash route and renders the AdminLoginPage component",
-        "The router handles the `/admin` hash route and renders AdminDashboardPage only if admin session is active, otherwise redirects to `/admin/login`"
+        "Navigating to /#/admin (or /admin depending on router mode) opens the AdminLoginPage without a blank screen or 404.",
+        "After entering valid admin credentials on AdminLoginPage, the user is redirected to AdminDashboardPage.",
+        "AdminProtectedRoute correctly guards the dashboard and redirects unauthenticated users to the admin login page.",
+        "The admin route does not render the shared Header and Footer components, consistent with the existing exclusion logic in App.tsx.",
+        "All other existing routes continue to work correctly after the fix."
       ]
     }
   ],
   "constraints": [
-    "Admin credentials must be hardcoded as username: admin, password: admin123 (changeable in code later)",
-    "Regular user authentication must use Internet Identity only — no manual email/password for regular users",
-    "Do not modify files listed in frontend.immutablePaths",
-    "Admin session must be client-side only (localStorage or sessionStorage) — no backend changes required for admin auth"
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "Preserve existing admin authentication logic in AdminLoginPage.tsx and AdminProtectedRoute.tsx — only fix the routing wiring."
   ],
   "nonGoals": [
-    "Multi-admin account management",
-    "Backend-based admin authentication or JWT tokens",
-    "Email/password login for regular (non-admin) users",
-    "Any changes to existing product management or backend logic"
+    "Changing admin credentials or authentication mechanism.",
+    "Redesigning the admin dashboard UI.",
+    "Adding new admin features or pages."
   ],
   "imageRequirements": {
     "required": [],

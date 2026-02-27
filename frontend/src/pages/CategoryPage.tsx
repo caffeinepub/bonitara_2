@@ -1,195 +1,145 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useActor } from '../hooks/useActor';
 import { Product } from '../backend';
 import ProductCard from '../components/ProductCard';
+import { useCart, useWishlist } from '../App';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SlidersHorizontal } from 'lucide-react';
 
 interface CategoryPageProps {
   category: string;
 }
 
-const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
-  'soap-making': 'Soap Making',
+// Maps URL slug → all possible backend category strings (both new camelCase and legacy snake_case)
+const slugToCategoryStrings: Record<string, string[]> = {
+  'candle-making': ['candleMaking', 'candle_making'],
+  'soap-making': ['soapMaking', 'soap_making'],
+  'fragrance': ['fragrance', 'fragrances'],
+  'resin-art': ['resinArt', 'resin_art'],
+};
+
+const slugToDisplayName: Record<string, string> = {
   'candle-making': 'Candle Making',
-  'resin-art': 'Resin Art',
+  'soap-making': 'Soap Making',
   'fragrance': 'Fragrance',
-  'soap': 'Soap Making',
-  'candle': 'Candle Making',
-  'resin': 'Resin Art',
-  'Soap Making': 'Soap Making',
-  'Candle Making': 'Candle Making',
-  'Resin Art': 'Resin Art',
-  'Fragrance': 'Fragrance',
+  'resin-art': 'Resin Art',
 };
 
-const CATEGORY_IMAGES: Record<string, string> = {
-  'soap-making': '/assets/generated/category-soap.dim_600x400.png',
+const slugToBannerImage: Record<string, string> = {
   'candle-making': '/assets/generated/category-candle.dim_600x400.png',
-  'resin-art': '/assets/generated/category-resin.dim_600x400.png',
+  'soap-making': '/assets/generated/category-soap.dim_600x400.png',
   'fragrance': '/assets/generated/category-fragrance.dim_600x400.png',
-  'soap': '/assets/generated/category-soap.dim_600x400.png',
-  'candle': '/assets/generated/category-candle.dim_600x400.png',
-  'resin': '/assets/generated/category-resin.dim_600x400.png',
+  'resin-art': '/assets/generated/category-resin.dim_600x400.png',
 };
 
-// Map URL slug to backend category string
-function getCategoryBackendName(slug: string): string {
-  const map: Record<string, string> = {
-    'soap-making': 'Soap Making',
-    'candle-making': 'Candle Making',
-    'resin-art': 'Resin Art',
-    'fragrance': 'Fragrance',
-    'soap': 'Soap Making',
-    'candle': 'Candle Making',
-    'resin': 'Resin Art',
-  };
-  // If it's already a display name, return as-is
-  if (Object.values(map).includes(slug)) return slug;
-  return map[slug] || slug;
+type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc';
+
+function sortProducts(products: Product[], sort: SortOption): Product[] {
+  const arr = [...products];
+  switch (sort) {
+    case 'price-asc': return arr.sort((a, b) => Number(a.price) - Number(b.price));
+    case 'price-desc': return arr.sort((a, b) => Number(b.price) - Number(a.price));
+    case 'name-asc': return arr.sort((a, b) => a.name.localeCompare(b.name));
+    default: return arr;
+  }
 }
 
 export default function CategoryPage({ category }: CategoryPageProps) {
   const { actor, isFetching: actorFetching } = useActor();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState('default');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
-  const [maxPrice, setMaxPrice] = useState(100000);
+  const { addToCart } = useCart();
+  const { toggleWishlist, isWishlisted } = useWishlist();
+  const [sort, setSort] = useState<SortOption>('default');
 
-  const backendCategory = getCategoryBackendName(category);
-  const displayName = CATEGORY_DISPLAY_NAMES[category] || backendCategory;
-  const categoryImage = CATEGORY_IMAGES[category];
+  // Normalize the slug — strip any trailing /product/... segment
+  const slug = category.replace(/\/product\/.*$/, '');
 
-  useEffect(() => {
-    if (!actor || actorFetching) return;
+  const categoryStrings = slugToCategoryStrings[slug] ?? [slug];
+  const displayName = slugToDisplayName[slug] ?? slug;
+  const bannerImage = slugToBannerImage[slug] ?? '/assets/generated/category-candle.dim_600x400.png';
 
-    setLoading(true);
-    setError(null);
+  // Fetch all products and filter client-side to handle both legacy and new category strings
+  const { data: allProducts = [], isLoading } = useQuery<Product[]>({
+    queryKey: ['products', 'all'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllProducts();
+    },
+    enabled: !!actor && !actorFetching,
+  });
 
-    actor.getProductsByCategory(backendCategory)
-      .then(result => {
-        setProducts(result);
-        if (result.length > 0) {
-          const max = Math.max(...result.map(p => Number(p.price)));
-          setMaxPrice(max);
-          setPriceRange([0, max]);
-        }
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching products by category:', err);
-        setError('Failed to load products. Please try again.');
-        setLoading(false);
-      });
-  }, [actor, actorFetching, backendCategory]);
-
-  const filteredProducts = products
-    .filter(p => {
-      const price = Number(p.price);
-      return price >= priceRange[0] && price <= priceRange[1];
-    })
-    .sort((a, b) => {
-      if (sortBy === 'price-asc') return Number(a.price) - Number(b.price);
-      if (sortBy === 'price-desc') return Number(b.price) - Number(a.price);
-      if (sortBy === 'name-asc') return a.name.localeCompare(b.name);
-      return 0;
-    });
+  const products = allProducts.filter(p => categoryStrings.includes(p.category));
+  const sorted = sortProducts(products, sort);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Category Banner */}
-      <div className="relative h-48 md:h-64 overflow-hidden">
-        {categoryImage ? (
-          <img
-            src={categoryImage}
-            alt={displayName}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-primary/10" />
-        )}
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+      {/* Banner */}
+      <div className="relative h-48 sm:h-64 overflow-hidden">
+        <img src={bannerImage} alt={displayName} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-foreground/40 flex items-center justify-center">
           <div className="text-center text-white">
-            <h1 className="font-display text-3xl md:text-5xl mb-2">{displayName}</h1>
-            <p className="font-body text-white/80">
-              {loading ? '...' : `${filteredProducts.length} products`}
-            </p>
+            <p className="text-sm uppercase tracking-widest mb-2 opacity-80">Shop</p>
+            <h1 className="text-3xl sm:text-4xl font-serif font-bold">{displayName}</h1>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Filters & Sort Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-border">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground font-body">
-            <SlidersHorizontal className="w-4 h-4" />
-            <span>
-              {loading ? 'Loading...' : `Showing ${filteredProducts.length} of ${products.length} products`}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-body text-muted-foreground">Sort by:</label>
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value)}
-                className="appearance-none bg-background border border-border rounded-sm px-3 py-1.5 pr-8 text-sm font-body text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-              >
-                <option value="default">Default</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="name-asc">Name: A to Z</option>
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Breadcrumb */}
+        <nav className="text-sm text-muted-foreground mb-6">
+          <a href="#/" className="hover:text-primary transition-colors">Home</a>
+          <span className="mx-2">/</span>
+          <span className="text-foreground">{displayName}</span>
+        </nav>
+
+        {/* Sort bar */}
+        <div className="flex items-center justify-between mb-8">
+          <p className="text-sm text-muted-foreground">
+            {isLoading ? 'Loading…' : `${sorted.length} product${sorted.length !== 1 ? 's' : ''}`}
+          </p>
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+            <Select value={sort} onValueChange={v => setSort(v as SortOption)}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Featured</SelectItem>
+                <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                <SelectItem value="name-asc">Name: A–Z</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        {/* Content */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="space-y-3">
-                <Skeleton className="aspect-square w-full rounded-sm" />
+                <Skeleton className="aspect-square rounded-xl" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
               </div>
             ))}
           </div>
-        ) : error ? (
-          <div className="text-center py-20">
-            <p className="text-destructive font-body mb-4">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-primary text-primary-foreground px-6 py-2 rounded-sm font-body hover:bg-primary/90 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <SlidersHorizontal className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="font-display text-xl text-foreground mb-2">No products found</h3>
-            <p className="text-muted-foreground font-body mb-6">
-              {products.length === 0
-                ? `No products are available in the "${displayName}" category yet.`
-                : 'No products match your current filters.'}
-            </p>
-            <a
-              href="#/"
-              className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-sm font-body hover:bg-primary/90 transition-colors"
-            >
-              Back to Home
-            </a>
+        ) : sorted.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground">
+            <p className="text-lg">No products found in this category.</p>
+            <a href="#/" className="mt-4 inline-block text-primary hover:underline">Back to Home</a>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map(product => (
-              <ProductCard key={product.id.toString()} product={product} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            {sorted.map(product => (
+              <ProductCard
+                key={product.id.toString()}
+                product={product}
+                onAddToCart={addToCart}
+                onToggleWishlist={toggleWishlist}
+                isWishlisted={isWishlisted(product.id)}
+              />
             ))}
           </div>
         )}
